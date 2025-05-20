@@ -15,4 +15,5 @@ urlpatterns = [
     path('pcs/<int:pc_id>/update-farmers/', views.update_pc_farmers, name='update_pc_farmers'),
     path('pcs/<int:pc_id>/toggle-active/', views.toggle_pc_active, name='toggle_pc_active'),
     path('farmers/<int:farmer_id>/toggle-active/', views.toggle_farmer_active, name='toggle_farmer_active'),
+    path('users/me/', views.get_current_user, name='get_current_user'),
 ]#add view admins and view customers

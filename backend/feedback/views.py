@@ -11,6 +11,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def submit_feedback(request):
     if request.method == 'POST':
         data, error = parse_json_request(request)
@@ -18,17 +21,36 @@ def submit_feedback(request):
             return error  # Return error response if JSON parsing fails
 
         customer = request.user
+        service_id = data.get('service_id')
         message = data.get('message')
+        rating = data.get('rating', 5)
+        sentiment_label_1 = ''
+        sentiment_label_2 = ''
+        message_in_english = ''
 
-        # Analyze sentiment
+        # Analyze sentiment (optional, can be replaced by ML later)
         sentiment = analyze_sentiment(message)
 
+        # Validate service
+        try:
+            service = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
+            return JsonResponse({'error': 'Service not found.'}, status=404)
+
         # Save feedback
-        feedback = Feedback.objects.create(customer=customer, message=message, sentiment=sentiment)
+        feedback = Feedback.objects.create(
+            customer=customer,
+            service=service,
+            message=message,
+            rating=rating,
+            sentiment=sentiment,
+            sentiment_label_1=sentiment_label_1,
+            sentiment_label_2=sentiment_label_2,
+            message_in_english=message_in_english,
+        )
         return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 
 # @user_passes_test(lambda u: u.role == 'superadmin')
 def view_feedback(request):

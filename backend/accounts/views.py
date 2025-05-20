@@ -359,3 +359,21 @@ def toggle_farmer_active(request, farmer_id):
         except User.DoesNotExist:
             return JsonResponse({"error": "Farmer not found."}, status=404)
     return JsonResponse({"error": "Invalid request method."}, status=405)
+
+@require_GET
+def get_current_user(request):
+    user = request.user
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required.'}, status=401)
+    return JsonResponse({
+        "id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "phone_number": user.phone_number,
+        "is_active": user.is_active,
+        "active_services": user.active_services or [],
+        "address": user.address,
+        "number_of_farmers": getattr(user, "number_of_farmers", None),
+        "last_name": user.last_name,
+        "first_name": getattr(user, "first_name", ""),
+    }, status=200)
