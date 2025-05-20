@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 
@@ -7,7 +7,27 @@ const FeedbackPage = () => {
     const service = location.state?.service;
     const [message, setMessage] = useState("");
     const [rating, setRating] = useState(5);
+    const [specificService, setSpecificService] = useState("");
     const [status, setStatus] = useState("");
+    const [allowed, setAllowed] = useState(null);
+    const [reason, setReason] = useState("");
+
+    useEffect(() => {
+        const checkAllowed = async () => {
+            if (!service) return;
+            try {
+                const res = await axios.get(
+                    `http://127.0.0.1:8000/feedback/can-give-feedback/?service_id=${service.id}`
+                );
+                setAllowed(res.data.allowed);
+                setReason(res.data.reason || "");
+            } catch {
+                setAllowed(false);
+                setReason("Could not verify feedback eligibility.");
+            }
+        };
+        checkAllowed();
+    }, [service]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,10 +37,13 @@ const FeedbackPage = () => {
                 service_id: service.id,
                 message,
                 rating,
+                specific_service: specificService,
             });
             setStatus("Feedback submitted successfully!");
             setMessage("");
             setRating(5);
+            setSpecificService("");
+            setAllowed(false); // Prevent further feedback until reload
         } catch (err) {
             setStatus("Failed to submit feedback.");
         }
@@ -30,11 +53,32 @@ const FeedbackPage = () => {
         return <div className="p-6">No service selected.</div>;
     }
 
+    if (allowed === false) {
+        return (
+            <div className="p-6 max-w-xl mx-auto">
+                <h2 className="text-2xl font-bold mb-2">Feedback for {service.name}</h2>
+                <div className="mb-4 text-red-600">{reason}</div>
+            </div>
+        );
+    }
+
+    if (allowed === null) {
+        return <div className="p-6">Checking feedback eligibility...</div>;
+    }
+
     return (
         <div className="p-6 max-w-xl mx-auto">
             <h2 className="text-2xl font-bold mb-2">Feedback for {service.name}</h2>
             <div className="mb-4 text-gray-600">{service.description}</div>
             <form onSubmit={handleSubmit} className="bg-white rounded shadow p-4">
+                <label className="block mb-2 font-semibold">Specific Service</label>
+                <input
+                    className="w-full border rounded p-2 mb-4"
+                    value={specificService}
+                    onChange={e => setSpecificService(e.target.value)}
+                    placeholder="specific type or breed of the service"
+                    required
+                />
                 <label className="block mb-2 font-semibold">Rating</label>
                 <select
                     className="w-full border rounded p-2 mb-4"

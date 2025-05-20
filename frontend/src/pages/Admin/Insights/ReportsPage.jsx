@@ -72,6 +72,7 @@ const ReportsPage = () => {
                                     <th className="border px-4 py-2">Username</th>
                                     <th className="border px-4 py-2">Role</th>
                                     <th className="border px-4 py-2">Phone</th>
+                                    <th className="border px-4 py-2">Cooperative</th>
                                     <th className="border px-4 py-2">Active</th>
                                 </tr>
                             </thead>
@@ -82,6 +83,7 @@ const ReportsPage = () => {
                                         <td className="border px-4 py-2">{user.username}</td>
                                         <td className="border px-4 py-2">{user.role || "—"}</td>
                                         <td className="border px-4 py-2">{user.phone_number || "—"}</td>
+                                        <td className="border px-4 py-2">{user.last_name || "—"}</td>
                                         <td className="border px-4 py-2">{user.is_active ? "Active" : "Inactive"}</td>
                                     </tr>
                                 ))}

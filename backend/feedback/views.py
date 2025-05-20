@@ -18,26 +18,27 @@ def submit_feedback(request):
     if request.method == 'POST':
         data, error = parse_json_request(request)
         if error:
-            return error  # Return error response if JSON parsing fails
+            return error
 
         customer = request.user
         service_id = data.get('service_id')
         message = data.get('message')
         rating = data.get('rating', 5)
+        specific_service = data.get('specific_service', '')  # Get from frontend
+
+        # These fields will be set by ML/translation APIs later, so set as empty strings for now
         sentiment_label_1 = ''
         sentiment_label_2 = ''
         message_in_english = ''
+        summarized = ''
 
-        # Analyze sentiment (optional, can be replaced by ML later)
         sentiment = analyze_sentiment(message)
 
-        # Validate service
         try:
             service = Service.objects.get(id=service_id)
         except Service.DoesNotExist:
             return JsonResponse({'error': 'Service not found.'}, status=404)
 
-        # Save feedback
         feedback = Feedback.objects.create(
             customer=customer,
             service=service,
@@ -47,10 +48,13 @@ def submit_feedback(request):
             sentiment_label_1=sentiment_label_1,
             sentiment_label_2=sentiment_label_2,
             message_in_english=message_in_english,
+            specific_service=specific_service,
+            summarized=summarized,
         )
         return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 # @user_passes_test(lambda u: u.role == 'superadmin')
 def view_feedback(request):
@@ -135,3 +139,23 @@ def delete_service(request, service_id):
         except Service.DoesNotExist:
             return JsonResponse({'error': 'Service not found.'}, status=404)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+from django.utils import timezone
+from datetime import timedelta
+from django.views.decorators.http import require_GET
+
+@require_GET
+def can_give_feedback(request):
+    user = request.user
+    service_id = request.GET.get('service_id')
+    if not service_id:
+        return JsonResponse({'error': 'service_id is required'}, status=400)
+    feedbacks = Feedback.objects.filter(customer=user, service_id=service_id).order_by('-created_at')
+    count = feedbacks.count()
+    if count >= 3:
+        return JsonResponse({'allowed': False, 'reason': 'You have reached the feedback limit for this service.'})
+    if count > 0:
+        last_feedback = feedbacks.first()
+        if timezone.now() - last_feedback.created_at < timedelta(seconds=24* 60 * 60):
+            return JsonResponse({'allowed': False, 'reason': 'You must wait 24 hours before submitting another feedback for this service.'})
+    return JsonResponse({'allowed': True})
