@@ -20,8 +20,7 @@ import AnnouncementsPage from "./pages/Cooperative/AnnouncementsPage";
 import CooperativeSignUpForm from "./components/auth/CooperativeSignUpForm";
 // Admin
 import AdminHome from "./pages/Admin/AdminHome";
-import ChartsPage from "./pages/Admin/Insights/ChartsPage";
-import GraphsPage from "./pages/Admin/Insights/GraphsPage";
+import VisualsPage from "./pages/Admin/Insights/VisualsPage";
 import RecommendationsPage from "./pages/Admin/Insights/RecommendationsPage";
 import ReportsPage from "./pages/Admin/Insights/ReportsPage";
 import AddServicePage from "./pages/Admin/Services/AddServicePage";
@@ -86,9 +85,7 @@ export default function App() {
         }
       >
         <Route index element={<AdminHome />} />
-        <Route path="insights/charts" element={<ChartsPage />} />
-        <Route path="insights/graphs" element={<GraphsPage />} />
-        <Route path="insights/recommendations" element={<RecommendationsPage />} />
+        <Route path="insights/visuals" element={<VisualsPage />} />        <Route path="insights/recommendations" element={<RecommendationsPage />} />
         <Route path="insights/reports" element={<ReportsPage />} />
         <Route path="services/add" element={<AddServicePage />} />
         <Route path="services/view" element={<ViewServicesPage />} />

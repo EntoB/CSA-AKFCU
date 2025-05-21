@@ -15,14 +15,12 @@ import {
     FaUsers,
     FaBullhorn,
     FaSignOutAlt,
-    FaDesktop,
     FaPen
 } from "react-icons/fa";
 
 const adminLinks = [
     { to: "/admin", icon: <FaTachometerAlt />, label: "Dashboard" },
-    { to: "/admin/insights/charts", icon: <FaChartBar />, label: "Charts" },
-    { to: "/admin/insights/graphs", icon: <FaProjectDiagram />, label: "Graphs" },
+    { to: "/admin/insights/visuals", icon: <FaChartBar />, label: "Visuals" }, // merged charts/graphs
     { to: "/admin/insights/recommendations", icon: <FaLightbulb />, label: "Recommendations" },
     { to: "/admin/insights/reports", icon: <FaFileAlt />, label: "Reports" },
     { to: "/admin/services/add", icon: <FaPlus />, label: "Add Service" },
