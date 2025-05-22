@@ -3,15 +3,12 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from .models import Feedback, Service
 from accounts.helpers.utils import parse_json_request
-from feedback.helpers.utils import analyze_sentiment
+from feedback.helpers.utils import analyze_sentiment, translate_text
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
-
-from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def submit_feedback(request):
@@ -24,15 +21,18 @@ def submit_feedback(request):
         service_id = data.get('service_id')
         message = data.get('message')
         rating = data.get('rating', 5)
-        specific_service = data.get('specific_service', '')  # Get from frontend
+        specific_service = data.get('specific_service', '')
 
-        # These fields will be set by ML/translation APIs later, so set as empty strings for now
         sentiment_label_1 = ''
         sentiment_label_2 = ''
-        message_in_english = ''
         summarized = ''
 
-        sentiment = analyze_sentiment(message)
+        # Always translate to English using autodetect
+        translated = translate_text(message, "Autodetect")
+        message_in_english = translated if translated else ""
+
+        # Sentiment analysis should be on the English message
+        sentiment = analyze_sentiment(message_in_english)
 
         try:
             service = Service.objects.get(id=service_id)
