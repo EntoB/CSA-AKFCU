@@ -259,7 +259,7 @@ def get_users(request):
 @require_GET
 def get_coop_farmers(request):
     coop_username = request.user.username
-    print(f"Cooperative username: {coop_username}")
+    # print(f"Cooperative username: {coop_username}")
 
     farmers = User.objects.filter(role='farmer')
     filtered_farmers = [
@@ -278,7 +278,7 @@ def get_coop_farmers(request):
         }
         for farmer in filtered_farmers
     ]
-    print(f"Filtered farmers: {farmers_data}")
+    # print(f"Filtered farmers: {farmers_data}")
     return JsonResponse({
         "coopname": coop_username,
         "farmers": farmers_data,

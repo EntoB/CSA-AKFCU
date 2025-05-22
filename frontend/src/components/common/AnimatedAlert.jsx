@@ -32,13 +32,13 @@ const AnimatedAlert = ({
                     exit={{ opacity: 0, y: -20, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
                     style={{
-                        position: 'absolute',
+                        position: 'fixed', // <-- changed from 'absolute' to 'fixed'
                         left: '50%',
                         top: 0,
                         transform: 'translateX(-50%)',
                         width: '100%',
                         maxWidth: 500,
-                        zIndex: 10,
+                        zIndex: 1300, // higher z-index to be above most elements
                     }}
                 >
                     <Alert
