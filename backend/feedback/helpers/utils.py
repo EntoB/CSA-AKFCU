@@ -3,9 +3,42 @@ from textblob import TextBlob
 import requests
 from langdetect import detect
 import requests
+import google.generativeai as genai
+import os
+
+def generalize_feedback(feedback_text, service_name):
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    try:
+        prompt = f"""
+You are a helpful assistant that summarizes farmer feedback about the service: {service_name}.
+
+1. If the feedback is just something like "It is good", "It is bad", "It's okay", or doesn't explain anything, then ignore it and respond with: "ignore".
+2. If the feedback includes even a small detail or a recommendation, then give me a resonce containing only one or two short sentences that summarize what the farmer is trying to address.
+3. Emphasize issues where the farmer has a specific recommendation and improvement points.
+4. Avoid fancy language — use simple, real farmer wording.
+
+Feedback:
+\"{feedback_text}\"
+
+Output:
+"""
+        response = model.generate_content(prompt)
+        response_text = response.text.strip().lower()
+
+        if "ignore" in response_text:
+            return "This feedback was too vague to summarize clearly."
+
+        # Clean response
+        sentences = [s.strip() for s in response.text.strip().split('\n') if s.strip()]
+        return ' '.join(sentences[:2])
+
+    except Exception as e:
+        print(f"Gemini generalization error: {str(e)}")
+        return "Could not summarize feedback at this time."
 
 def analyze_sentiment(message):
-    analysis = TextBlob(message)
+    analysis = TextBlob(me  ssage)
     polarity = analysis.sentiment.polarity
     if polarity > 0:
         return 'positive'
