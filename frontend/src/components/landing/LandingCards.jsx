@@ -15,25 +15,25 @@ const cardData = [
     {
         label: "Sign Up as Cooperative",
         icon: <GroupAddIcon sx={{ fontSize: 40, color: "#16a34a" }} />,
-        to: "/register/cooperative",
+        to: "/cooperative-signup",
         color: "#e6f4ea",
     },
     {
         label: "Sign Up as Farmer",
         icon: <PersonAddAlt1Icon sx={{ fontSize: 40, color: "#f59e42" }} />,
-        to: "/register/farmer",
+        to: "/farmer-signup",
         color: "#fdf6e3",
     },
     {
         label: "Login as Cooperative",
         icon: <GroupIcon sx={{ fontSize: 40, color: "#1e293b" }} />,
-        to: "/login/cooperative",
+        to: "/login",
         color: "#e0e7ef",
     },
     {
         label: "Login as Farmer",
         icon: <PersonIcon sx={{ fontSize: 40, color: "#16a34a" }} />,
-        to: "/login/farmer",
+        to: "/login",
         color: "#e6f4ea",
     },
 ];
@@ -67,14 +67,20 @@ const LandingCards = () => {
                     >
                         <Card
                             sx={{
-                                background: card.color,
+                                background: `${card.color}A3`, // Add transparency (CC = 80% opacity)
                                 borderRadius: 3,
                                 boxShadow: 3,
-                                transition: "transform 0.2s",
+                                transition: "transform 0.3s",
                                 "&:hover": { transform: "scale(1.05)" },
+                                // Adjust height here:
+                                minHeight: 100, // You can change this value as needed
+                                height: 130,    // Or set a fixed height
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "center",
                             }}
                         >
-                            <CardActionArea onClick={() => navigate(card.to)}>
+                            <CardActionArea onClick={() => navigate(card.to)} sx={{ height: "100%" }}>
                                 <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 4 }}>
                                     {card.icon}
                                     <Typography variant="h6" sx={{ mt: 2, fontWeight: "bold", color: "#222" }}>

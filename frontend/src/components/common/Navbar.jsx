@@ -27,8 +27,6 @@ export default function Navbar() {
                     <Button color="inherit" component={Link} to="/about" startIcon={<InfoIcon />}>About</Button>
                     <Button color="inherit" component={Link} to="/contact" startIcon={<ContactMailIcon />}>Contact</Button>
                     {!user && <Button color="inherit" component={Link} to="/login" startIcon={<LoginIcon />}>Login</Button>}
-                    {!user && <Button color="inherit" component={Link} to="/farmer-signup" startIcon={<PersonAddIcon />}>Sign Up as farmer</Button>}
-                    {!user && <Button color="inherit" component={Link} to="/cooperative-signup" startIcon={<GroupsIcon />}>Sign Up as cooperative</Button>}
                     {user && <Logout />}
                 </Box>
             </Toolbar>
