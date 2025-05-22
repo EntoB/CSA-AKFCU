@@ -4,7 +4,9 @@ import requests
 from langdetect import detect
 import requests
 import google.generativeai as genai
+from dotenv import load_dotenv
 import os
+load_dotenv()
 
 def generalize_feedback(feedback_text, service_name):
     genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -16,29 +18,30 @@ You are a helpful assistant that summarizes farmer feedback about the service: {
 1. If the feedback is just something like "It is good", "It is bad", "It's okay", or doesn't explain anything, then ignore it and respond with: "ignore".
 2. If the feedback includes even a small detail or a recommendation, then give me a resonce containing only one or two short sentences that summarize what the farmer is trying to address.
 3. Emphasize issues where the farmer has a specific recommendation and improvement points.
-4. Avoid fancy language — use simple, real farmer wording.
-
+4. The summary should always be less than the original feedback.
 Feedback:
 \"{feedback_text}\"
 
-Output:
+After reading the feedback, please summarize it in one or two sentences. If the feedback is too vague, respond with "ignore".
 """
         response = model.generate_content(prompt)
         response_text = response.text.strip().lower()
 
         if "ignore" in response_text:
-            return "This feedback was too vague to summarize clearly."
+            return ''
 
         # Clean response
-        sentences = [s.strip() for s in response.text.strip().split('\n') if s.strip()]
+        sentences = [s.strip() for s in response_text.split('\n') if s.strip()]
+        if len(sentences) < 2:
+            sentences = [s.strip() for s in response_text.replace('.', '.\n').split('\n') if s.strip()]
         return ' '.join(sentences[:2])
 
     except Exception as e:
         print(f"Gemini generalization error: {str(e)}")
-        return "Could not summarize feedback at this time."
+        return True
 
 def analyze_sentiment(message):
-    analysis = TextBlob(me  ssage)
+    analysis = TextBlob(message)
     polarity = analysis.sentiment.polarity
     if polarity > 0:
         return 'positive'

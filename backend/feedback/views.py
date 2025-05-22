@@ -3,12 +3,13 @@ from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
 from .models import Feedback, Service
 from accounts.helpers.utils import parse_json_request
-from feedback.helpers.utils import analyze_sentiment, translate_text
+from feedback.helpers.utils import analyze_sentiment, translate_text, generalize_feedback
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+
 
 @csrf_exempt
 def submit_feedback(request):
@@ -25,7 +26,6 @@ def submit_feedback(request):
 
         sentiment_label_1 = ''
         sentiment_label_2 = ''
-        summarized = ''
 
         # Always translate to English using autodetect
         translated = translate_text(message, "Autodetect")
@@ -39,6 +39,10 @@ def submit_feedback(request):
         except Service.DoesNotExist:
             return JsonResponse({'error': 'Service not found.'}, status=404)
 
+        # Summarize feedback using Gemini/LLM
+        summarized = generalize_feedback(message_in_english, service.name)
+        if summarized == True:
+            return JsonResponse({'error': 'Gemini generalization error'}, status=500)
         feedback = Feedback.objects.create(
             customer=customer,
             service=service,
@@ -51,11 +55,9 @@ def submit_feedback(request):
             specific_service=specific_service,
             summarized=summarized,
         )
-        return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment}, status=201)
+        return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment, 'summary': summarized}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-
 # @user_passes_test(lambda u: u.role == 'superadmin')
 def view_feedback(request):
     if request.method == 'GET':
