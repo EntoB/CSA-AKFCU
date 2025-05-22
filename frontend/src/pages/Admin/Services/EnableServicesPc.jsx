@@ -5,14 +5,15 @@ import Button from '@mui/joy/Button';
 import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
-import Alert from '@mui/joy/Alert';
 import CircularProgress from '@mui/joy/CircularProgress';
+import AnimatedAlert from '../../../components/common/AnimatedAlert';
 
 function EnableServicesPc() {
     const [pcs, setPCs] = React.useState([]);
     const [services, setServices] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [message, setMessage] = React.useState('');
+    const [showAlert, setShowAlert] = React.useState(false);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -59,10 +60,12 @@ function EnableServicesPc() {
                 { headers: { 'Content-Type': 'application/json' } }
             );
             setMessage('Changes saved successfully!');
+            setShowAlert(true);
         } catch (err) {
             setMessage('Failed to save changes.');
+            setShowAlert(true);
         } finally {
-            setTimeout(() => setMessage(''), 2000);
+            setTimeout(() => setShowAlert(false), 4000);
         }
     };
 
@@ -79,16 +82,33 @@ function EnableServicesPc() {
     }
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%', position: 'relative' }}>
+            {/* Absolute Alert on top of everything */}
+            <Box
+                sx={{
+                    position: 'fixed',
+                    top: 24,
+                    left: 0,
+                    width: '100%',
+                    zIndex: 1300, // above modal/dialog
+                    display: 'flex',
+                    justifyContent: 'center',
+                    pointerEvents: 'none'
+                }}
+            >
+                <Box sx={{ pointerEvents: 'auto' }}>
+                    <AnimatedAlert
+                        open={showAlert}
+                        message={message}
+                        type={message === 'Changes saved successfully!' ? 'success' : 'danger'}
+                        onClose={() => setShowAlert(false)}
+                    />
+                </Box>
+            </Box>
+
             <Typography level="h3" sx={{ textAlign: 'center', pb: 2, fontWeight: 'bold' }}>
                 Enable Services for Cooperatives
             </Typography>
-
-            {message && (
-                <Alert color="success" variant="soft" sx={{ mb: 2, mx: 'auto', maxWidth: 500, textAlign: 'center' }}>
-                    {message}
-                </Alert>
-            )}
 
             <Sheet
                 variant="outlined"
@@ -117,14 +137,14 @@ function EnableServicesPc() {
                             padding: 0,
                         },
                         '& th': {
-                            backgroundColor: '#d3f9d8', // light green for service header
+                            backgroundColor: '#d3f9d8',
                             fontSize: '1rem',
                             fontWeight: 'bold',
                         },
                         '& td:first-child, & th:first-child': {
                             position: 'sticky',
                             left: 0,
-                            backgroundColor: '#d3f9d8', // light green for first column
+                            backgroundColor: '#d3f9d8',
                             fontSize: '1rem',
                             fontWeight: 'bold',
                             textAlign: 'left',

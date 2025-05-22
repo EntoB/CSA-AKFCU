@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import FeedbackResponse from "../../components/farmer/FeedbackResponse";
 
 const FeedbackPage = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const service = location.state?.service;
     const [message, setMessage] = useState("");
     const [rating, setRating] = useState(5);
@@ -11,6 +13,7 @@ const FeedbackPage = () => {
     const [status, setStatus] = useState("");
     const [allowed, setAllowed] = useState(null);
     const [reason, setReason] = useState("");
+    const [showResponse, setShowResponse] = useState(false);
 
     useEffect(() => {
         const checkAllowed = async () => {
@@ -43,7 +46,7 @@ const FeedbackPage = () => {
             setMessage("");
             setRating(5);
             setSpecificService("");
-            setAllowed(false); // Prevent further feedback until reload
+            setShowResponse(true); // Show feedback response dialog
         } catch (err) {
             setStatus("Failed to submit feedback.");
         }
@@ -105,6 +108,15 @@ const FeedbackPage = () => {
                 </button>
                 {status && <div className="mt-4 text-blue-600">{status}</div>}
             </form>
+            <FeedbackResponse
+                open={showResponse}
+                onClose={() => {
+                    setShowResponse(false);
+                    setAllowed(false); // Prevent further feedback until reload
+                    navigate("/farmer"); // Navigate to farmer home page
+                }}
+                message="Thank you for your feedback!"
+            />
         </div>
     );
 };

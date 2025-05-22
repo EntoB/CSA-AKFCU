@@ -159,3 +159,25 @@ def can_give_feedback(request):
         if timezone.now() - last_feedback.created_at < timedelta(seconds=24* 60 * 60):
             return JsonResponse({'allowed': False, 'reason': 'You must wait 24 hours before submitting another feedback for this service.'})
     return JsonResponse({'allowed': True})
+
+from django.views.decorators.http import require_GET
+
+@require_GET
+def recent_feedbacks(request):
+    feedbacks = (
+        Feedback.objects
+        .select_related('customer', 'service')
+        .order_by('-created_at')[:50]
+    )
+    feedback_data = [
+        {
+            'id': fb.id,
+            'customer': fb.customer.username,
+            'service': fb.service.name if fb.service else '',
+            'message': fb.message,
+            'sentiment': fb.sentiment,
+            'created_at': fb.created_at.strftime('%Y-%m-%d %H:%M'),
+        }
+        for fb in feedbacks
+    ]
+    return JsonResponse({'feedbacks': feedback_data}, status=200)
