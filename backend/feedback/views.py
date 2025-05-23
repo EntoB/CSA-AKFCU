@@ -11,6 +11,32 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 
+from django.views.decorators.http import require_GET
+
+@require_GET
+def all_feedbacks(request):
+    feedbacks = (
+        Feedback.objects
+        .select_related('customer', 'service')
+        .order_by('-created_at')
+    )
+    feedback_data = [
+        {
+            'id': fb.id,
+            'customer': fb.customer.username if fb.customer else '',
+            'service_id': fb.service.id if fb.service else None,
+            'service_name': fb.service.name if fb.service else '',
+            'category': fb.service.category if fb.service else '',
+            'cooperative': getattr(fb.customer, 'last_name', ''),  # adjust if you have a better field for cooperative
+            'message': fb.message,
+            'sentiment': fb.sentiment,
+            'created_at': fb.created_at.strftime('%Y-%m-%d'),
+            'summarized': fb.summarized,
+        }
+        for fb in feedbacks
+    ]
+    return JsonResponse({'feedbacks': feedback_data}, status=200)
+
 @csrf_exempt
 def submit_feedback(request):
     if request.method == 'POST':

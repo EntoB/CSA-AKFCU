@@ -10,4 +10,5 @@ urlpatterns = [
     path('services/<int:service_id>/delete/', views.delete_service, name='delete_service'),
     path('can-give-feedback/', views.can_give_feedback, name='can_give_feedback'),
     path('recent-feedbacks/', views.recent_feedbacks, name='recent_feedbacks'),
+    path('all-feedbacks/', views.all_feedbacks, name='all_feedbacks'),
 ]

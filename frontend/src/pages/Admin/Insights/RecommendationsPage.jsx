@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useCallback } from "react";
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
@@ -11,43 +10,39 @@ import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import FilterFeedbacks from "./FilterFeedbacks";
 
 const RecommendationsPage = () => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [recommendations, setRecommendations] = useState([]);
     const [recLoading, setRecLoading] = useState(false);
+    const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const res = await axios.get("http://127.0.0.1:8000/insights/all-feedbacks/");
-                setData(res.data);
-            } catch (err) {
-                // Optionally handle error
-            }
-            setLoading(false);
-        };
-        fetchData();
+    const handleSelect = useCallback((feedbacks) => {
+        setFilteredFeedbacks(feedbacks);
     }, []);
 
     const handleGenerateRecommendations = async () => {
         setRecLoading(true);
         try {
-            const res = await axios.get("http://127.0.0.1:8000/insights/recommendations/");
-            setRecommendations(res.data);
+            const res = await fetch("http://127.0.0.1:8000/insights/recommendations/");
+            const data = await res.json();
+            setRecommendations(data);
         } catch (err) {
             setRecommendations([{ service_name: "Error", recommendations: "Failed to generate recommendations." }]);
+        } finally {
+            setRecLoading(false);
         }
-        setRecLoading(false);
     };
 
     return (
         <Box sx={{ p: 4 }}>
+            <FilterFeedbacks onSelect={handleSelect} />
+
             <Typography variant="h4" fontWeight="bold" gutterBottom>
                 Summarized Feedbacks & Service
             </Typography>
+
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                     <CircularProgress />
@@ -59,16 +54,34 @@ const RecommendationsPage = () => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell sx={{ fontWeight: 'bold' }}>Service Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Category</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Cooperative</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold' }}>Sentiment</TableCell>
                                     <TableCell sx={{ fontWeight: 'bold' }}>Summarized Feedback</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data.map((row, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>{row.service_name || <i>Unknown</i>}</TableCell>
-                                        <TableCell>{row.summarized || <i>No summary</i>}</TableCell>
+                                {filteredFeedbacks.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="center">
+                                            No feedbacks found for the selected filters.
+                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : (
+                                    filteredFeedbacks.map((row, idx) => (
+                                        <TableRow key={idx}>
+                                            <TableCell>{row.service_name || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.category || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.cooperative || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.customer || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.created_at || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.sentiment || <i>Unknown</i>}</TableCell>
+                                            <TableCell>{row.summarized || <i>No summary</i>}</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </TableContainer>
