@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import Layout from "./components/common/Layout";
 import NotFound from "./components/common/NotFound";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -33,7 +34,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import CoopLayout from "./components/cooperative/CoopLayout";
 import LoginForm from "./components/auth/LoginForm";
 
-export default function App() {
+function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
@@ -50,7 +51,7 @@ export default function App() {
       <Route
         path="farmer"
         element={
-          <ProtectedRoute allowedRoles={['farmer']}>
+          <ProtectedRoute allowedRoles={["farmer"]}>
             <Layout />
           </ProtectedRoute>
         }
@@ -63,7 +64,7 @@ export default function App() {
       <Route
         path="cooperative"
         element={
-          <ProtectedRoute allowedRoles={['cooperative']}>
+          <ProtectedRoute allowedRoles={["cooperative"]}>
             <CoopLayout />
           </ProtectedRoute>
         }
@@ -79,13 +80,17 @@ export default function App() {
       <Route
         path="admin"
         element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={["admin"]}>
             <AdminLayout />
           </ProtectedRoute>
         }
       >
         <Route index element={<AdminHome />} />
-        <Route path="insights/visuals" element={<VisualsPage />} />        <Route path="insights/recommendations" element={<RecommendationsPage />} />
+        <Route path="insights/visuals" element={<VisualsPage />} />
+        <Route
+          path="insights/recommendations"
+          element={<RecommendationsPage />}
+        />
         <Route path="insights/reports" element={<ReportsPage />} />
         <Route path="services/add" element={<AddServicePage />} />
         <Route path="services/view" element={<ViewServicesPage />} />
@@ -98,5 +103,13 @@ export default function App() {
       {/* Catch-all route for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppRoutes />
+    </LanguageProvider>
   );
 }

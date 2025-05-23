@@ -14,6 +14,7 @@ function EnableServicesPc() {
     const [loading, setLoading] = React.useState(true);
     const [message, setMessage] = React.useState('');
     const [showAlert, setShowAlert] = React.useState(false);
+    const [search, setSearch] = React.useState("");
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -23,7 +24,7 @@ function EnableServicesPc() {
                 const servicesRes = await axios.get('http://127.0.0.1:8000/feedback/services/');
                 setPCs(pcsRes.data);
                 setServices(servicesRes.data);
-            } catch (err) {
+            } catch {
                 setMessage('Failed to load cooperatives or services.');
             } finally {
                 setLoading(false);
@@ -61,13 +62,19 @@ function EnableServicesPc() {
             );
             setMessage('Changes saved successfully!');
             setShowAlert(true);
-        } catch (err) {
+        } catch {
             setMessage('Failed to save changes.');
             setShowAlert(true);
         } finally {
             setTimeout(() => setShowAlert(false), 4000);
         }
     };
+
+    // Filtered PCs based on search
+    const filteredPCs = pcs.filter(pc =>
+        pc.username?.toLowerCase().includes(search.toLowerCase()) ||
+        pc.phone_number?.toLowerCase().includes(search.toLowerCase())
+    );
 
     if (loading) {
         return (
@@ -83,6 +90,30 @@ function EnableServicesPc() {
 
     return (
         <Box sx={{ width: '100%', position: 'relative' }}>
+            {/* Search input */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0 }}>
+                <input
+                    type="text"
+                    placeholder="Search cooperative "
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    style={{
+                        padding: '10px 18px',
+                        borderRadius: 12,
+                        border: '1.5px solid #16a34a',
+                        fontSize: 20,
+                        minWidth: 300,
+                        outline: 'none',
+                        marginRight: 8,
+                        background: '#f7fbe7',
+                        color: '#14532d',
+                        boxShadow: '0 2px 8px 0 rgba(22,163,74,0.07)',
+                        transition: 'border 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={e => e.target.style.border = '2px solid #22c55e'}
+                    onBlur={e => e.target.style.border = '1.5px solid #16a34a'}
+                />
+            </Box>
             {/* Absolute Alert on top of everything */}
             <Box
                 sx={{
@@ -162,7 +193,7 @@ function EnableServicesPc() {
                         </tr>
                     </thead>
                     <tbody>
-                        {pcs.map(pc => (
+                        {filteredPCs.map(pc => (
                             <tr key={pc.id}>
                                 <td>{pc.username}</td>
                                 {services.map(service => {

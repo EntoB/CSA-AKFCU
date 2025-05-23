@@ -20,6 +20,7 @@ const ViewServicesPage = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         fetchServices();
@@ -47,9 +48,39 @@ const ViewServicesPage = () => {
         }
     };
 
+    // Filtered services based on search
+    const filteredServices = services.filter(service =>
+        service.name?.toLowerCase().includes(search.toLowerCase()) ||
+        service.category?.toLowerCase().includes(search.toLowerCase()) ||
+        service.description?.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">All Services</h2>
+            {/* Search input */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                <input
+                    type="text"
+                    placeholder="Search by name or category,"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    style={{
+                        padding: '10px 18px',
+                        borderRadius: 12,
+                        border: '1.5px solid #16a34a',
+                        fontSize: 17,
+                        minWidth: 300,
+                        outline: 'none',
+                        background: '#f7fbe7',
+                        color: '#14532d',
+                        boxShadow: '0 2px 8px 0 rgba(22,163,74,0.07)',
+                        transition: 'border 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={e => e.target.style.border = '2px solid #22c55e'}
+                    onBlur={e => e.target.style.border = '1.5px solid #16a34a'}
+                />
+            </div>
             {message && <div className="mb-4 text-blue-600">{message}</div>}
             {loading ? (
                 <div>Loading...</div>
@@ -79,10 +110,10 @@ const ViewServicesPage = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {services.map((service) => (
+                                {filteredServices.map((service) => (
                                     <TableRow hover tabIndex={-1} key={service.id}>
-                                        <TableCell style={{ fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '0.98rem' }}>{service.id}</TableCell>
-                                        <TableCell style={{ fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '0.98rem' }}>{service.name}</TableCell>
+                                        <TableCell style={{ fontFamily: 'Poppins, sans-serif', fontSize: '0.98rem' }}>{service.id}</TableCell>
+                                        <TableCell style={{ fontFamily: 'Poppins, sans-serif', fontSize: '1rem' }}>{service.name}</TableCell>
                                         <TableCell style={{ fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '0.98rem' }}>{service.description || "—"}</TableCell>
                                         <TableCell style={{ fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '0.98rem' }}>{service.category || "—"}</TableCell>
                                         <TableCell>

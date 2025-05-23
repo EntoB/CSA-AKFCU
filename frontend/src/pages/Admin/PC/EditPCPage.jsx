@@ -8,6 +8,7 @@ const EditPCPage = () => {
     const [message, setMessage] = useState({ text: "", type: "" });
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         fetchPCs();
@@ -66,6 +67,12 @@ const EditPCPage = () => {
         }
     };
 
+    // Filtered PCs based on search
+    const filteredPCs = pcs.filter(pc =>
+        pc.username?.toLowerCase().includes(search.toLowerCase()) ||
+        pc.phone_number?.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
@@ -79,12 +86,35 @@ const EditPCPage = () => {
                                 Select a cooperative to update the number of farmers
                             </p>
                         </div>
-
+                        {/* Search input */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                            <input
+                                type="text"
+                                placeholder="Search by name or phone..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                style={{
+                                    padding: '10px 18px',
+                                    borderRadius: 12,
+                                    border: '1.5px solid #16a34a',
+                                    fontSize: 20,
+                                    minWidth: 300,
+                                    outline: 'none',
+                                    marginRight: 8,
+                                    background: '#f7fbe7',
+                                    color: '#14532d',
+                                    boxShadow: '0 2px 8px 0 rgba(22,163,74,0.07)',
+                                    transition: 'border 0.2s, box-shadow 0.2s',
+                                }}
+                                onFocus={e => e.target.style.border = '2px solid #22c55e'}
+                                onBlur={e => e.target.style.border = '1.5px solid #16a34a'}
+                            />
+                        </div>
                         {message.text && (
                             <div
                                 className={`mb-6 p-4 rounded-md ${message.type === "success"
-                                        ? "bg-green-50 text-green-800"
-                                        : "bg-red-50 text-red-800"
+                                    ? "bg-green-50 text-green-800"
+                                    : "bg-red-50 text-red-800"
                                     }`}
                             >
                                 {message.text}
@@ -112,13 +142,13 @@ const EditPCPage = () => {
                                     </div>
                                 ) : (
                                     <ul className="divide-y divide-gray-200 border border-gray-200 rounded-lg overflow-hidden">
-                                        {pcs.length > 0 ? (
-                                            pcs.map((pc) => (
+                                        {filteredPCs.length > 0 ? (
+                                            filteredPCs.map((pc) => (
                                                 <li
                                                     key={pc.id}
                                                     className={`p-4 cursor-pointer transition ${selectedPC?.id === pc.id
-                                                            ? "bg-green-100"
-                                                            : "hover:bg-gray-50"
+                                                        ? "bg-green-100"
+                                                        : "hover:bg-gray-50"
                                                         }`}
                                                     onClick={() => handleSelectPC(pc)}
                                                 >
@@ -200,10 +230,10 @@ const EditPCPage = () => {
                                                     newNumber === selectedPC.number_of_farmers
                                                 }
                                                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${updating ||
-                                                        newNumber === "" ||
-                                                        newNumber === selectedPC.number_of_farmers
-                                                        ? "opacity-50 cursor-not-allowed"
-                                                        : ""
+                                                    newNumber === "" ||
+                                                    newNumber === selectedPC.number_of_farmers
+                                                    ? "opacity-50 cursor-not-allowed"
+                                                    : ""
                                                     }`}
                                             >
                                                 {updating ? (

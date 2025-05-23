@@ -1,13 +1,15 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../contexts/LanguageContext";
+import LanguageSelector from "../../components/common/LanguageSelector";
 
 const FarmerHome = () => {
     const [farmer, setFarmer] = useState(null);
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { translate } = useLanguage(); // Using the custom hook
 
     useEffect(() => {
         const fetchFarmerAndServices = async () => {
@@ -47,6 +49,8 @@ const FarmerHome = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+            <LanguageSelector />
+
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Welcome Header */}
                 <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
@@ -66,9 +70,9 @@ const FarmerHome = () => {
                         </div>
                         <div className="text-center sm:text-left">
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                                Welcome,{" "}
+                                {translate("common.welcome")},{" "}
                                 <span className="text-green-600">
-                                    {farmer?.first_name || "Farmer"}
+                                    {farmer?.first_name || translate("common.welcome")}
                                 </span>
                             </h1>
                             <p className="mt-2 text-gray-600 flex items-center justify-center sm:justify-start">
@@ -84,9 +88,9 @@ const FarmerHome = () => {
                                         clipRule="evenodd"
                                     />
                                 </svg>
-                                Member of{" "}
+                                {translate("common.memberOf")}{" "}
                                 <span className="font-semibold ml-1 text-gray-700">
-                                    {farmer?.cooperative || "Agricultural Cooperative"}
+                                    {farmer?.cooperative || translate("common.memberOf")}
                                 </span>
                             </p>
                             <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2">
@@ -103,7 +107,7 @@ const FarmerHome = () => {
                                             clipRule="evenodd"
                                         />
                                     </svg>
-                                    Joined {new Date().getFullYear()}
+                                    {translate("common.joined")} {new Date().getFullYear()}
                                 </span>
                                 <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium flex items-center">
                                     <svg
@@ -119,7 +123,7 @@ const FarmerHome = () => {
                                         />
                                         <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
                                     </svg>
-                                    {services.length} Active Services
+                                    {services.length} {translate("common.activeServices")}
                                 </span>
                             </div>
                         </div>
@@ -130,7 +134,7 @@ const FarmerHome = () => {
                 <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                            Your Active Services
+                            {translate("farmer.yourActiveServices")}
                         </h2>
                     </div>
 
@@ -153,14 +157,13 @@ const FarmerHome = () => {
                                 </svg>
                             </div>
                             <h3 className="text-xl font-medium text-gray-700 mb-2">
-                                No Active Services Found
+                                {translate("farmer.noServicesFound")}
                             </h3>
                             <p className="text-gray-500 max-w-md mx-auto mb-6">
-                                You don't have any active services at the moment. When you
-                                enroll in services, they'll appear here.
+                                {translate("farmer.noServicesDescription")}
                             </p>
                             <button className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
-                                Explore Available Services
+                                {translate("farmer.exploreServices")}
                             </button>
                         </div>
                     ) : (
@@ -204,13 +207,13 @@ const FarmerHome = () => {
                                                 </span>
                                             )}
                                             <span className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
-                                                Active
+                                                {translate("common.active")}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-right">
                                         <span className="text-sm text-green-600 font-medium inline-flex items-center">
-                                            Provide Feedback
+                                            {translate("common.provideFeedback")}
                                             <svg
                                                 className="w-4 h-4 ml-1"
                                                 fill="none"
@@ -251,7 +254,7 @@ const FarmerHome = () => {
                                     d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
                                 />
                             </svg>
-                            Cooperative Announcement
+                            {translate("farmer.cooperativeAnnouncement")}
                         </h3>
                     </div>
                     <div className="p-6">
@@ -276,27 +279,26 @@ const FarmerHome = () => {
                             </div>
                             <div className="ml-4">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                                    Upcoming Cooperative Meeting
+                                    {translate("farmer.upcomingMeeting")}
                                 </h4>
                                 <p className="text-gray-700 mb-3">
-                                    Join us for our monthly cooperative meeting on{" "}
+                                    {translate("farmer.meetingDetails")}{" "}
                                     <span className="font-medium">
-                                        Friday,{" "}
                                         {new Date().toLocaleDateString("en-US", {
+                                            weekday: "long",
                                             month: "long",
                                             day: "numeric",
                                         })}{" "}
-                                        at 10:00 AM
+                                        {translate("common.at")} 10:00 AM
                                     </span>{" "}
-                                    at the main cooperative hall.
+                                    {translate("farmer.meetingLocation")}
                                 </p>
                                 <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
                                     <p className="text-sm text-gray-700">
                                         <span className="font-medium text-green-700">
-                                            {farmer?.cooperative || "The Cooperative"}
+                                            {farmer?.cooperative || translate("common.cooperative")}
                                         </span>{" "}
-                                        leadership will discuss new subsidy programs and harvest
-                                        planning.
+                                        {translate("farmer.leadershipDiscussion")}
                                     </p>
                                 </div>
                                 <div className="mt-4 flex items-center text-sm text-gray-500">
@@ -314,7 +316,7 @@ const FarmerHome = () => {
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                         />
                                     </svg>
-                                    Posted{" "}
+                                    {translate("common.posted")}{" "}
                                     {new Date().toLocaleDateString("en-US", {
                                         month: "short",
                                         day: "numeric",
@@ -330,3 +332,4 @@ const FarmerHome = () => {
 };
 
 export default FarmerHome;
+
