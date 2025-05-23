@@ -4,6 +4,8 @@ import axios from "axios";
 const AddServicePage = () => {
     const [form, setForm] = useState({
         name: "",
+        name_am: "",
+        name_or: "",
         description: "",
         category: "",
         newCategory: "",
@@ -72,6 +74,8 @@ const AddServicePage = () => {
                 "http://127.0.0.1:8000/feedback/add-service/",
                 {
                     name: form.name,
+                    name_am: form.name_am,
+                    name_or: form.name_or,
                     description: form.description,
                     category: finalCategory,
                 },
@@ -88,6 +92,8 @@ const AddServicePage = () => {
                 });
                 setForm({
                     name: "",
+                    name_am: "",
+                    name_or: "",
                     description: "",
                     category: "",
                     newCategory: "",
@@ -129,8 +135,8 @@ const AddServicePage = () => {
                     {message.text && (
                         <div
                             className={`mb-6 p-4 rounded-md ${message.type === "success"
-                                    ? "bg-green-50 text-green-800"
-                                    : "bg-red-50 text-red-800"
+                                ? "bg-green-50 text-green-800"
+                                : "bg-red-50 text-red-800"
                                 }`}
                         >
                             {message.text}
@@ -143,7 +149,7 @@ const AddServicePage = () => {
                                 htmlFor="name"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Service Name *
+                                Service Name (English) *
                             </label>
                             <input
                                 type="text"
@@ -152,6 +158,40 @@ const AddServicePage = () => {
                                 value={form.name}
                                 onChange={handleChange}
                                 required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="name_am"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Service Name (Amharic)
+                            </label>
+                            <input
+                                type="text"
+                                id="name_am"
+                                name="name_am"
+                                value={form.name_am}
+                                onChange={handleChange}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="name_or"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Service Name (Oromic)
+                            </label>
+                            <input
+                                type="text"
+                                id="name_or"
+                                name="name_or"
+                                value={form.name_or}
+                                onChange={handleChange}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
                             />
                         </div>
@@ -231,8 +271,8 @@ const AddServicePage = () => {
                                 type="submit"
                                 disabled={isSubmitting || isLoading}
                                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${isSubmitting || isLoading
-                                        ? "opacity-70 cursor-not-allowed"
-                                        : ""
+                                    ? "opacity-70 cursor-not-allowed"
+                                    : ""
                                     }`}
                             >
                                 {isSubmitting ? (
@@ -272,7 +312,3 @@ const AddServicePage = () => {
 };
 
 export default AddServicePage;
-
-
-
-

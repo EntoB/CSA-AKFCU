@@ -4,10 +4,12 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Service(models.Model):
-    name = models.CharField(max_length=100)  # Service name
-    description = models.TextField(blank=True, null=True)  # Optional description
-    category = models.CharField(max_length=50, blank=True, null=True)  # Optional category
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for creation
+    name = models.CharField(max_length=100)  # Service name (default, e.g. English)
+    name_am = models.CharField(max_length=100, blank=True, null=True)  # Amharic name
+    name_or = models.CharField(max_length=100, blank=True, null=True)  # Oromic name
+    description = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name

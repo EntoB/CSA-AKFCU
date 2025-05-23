@@ -7,7 +7,6 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import AnimatedAlert from "../../../components/common/AnimatedAlert";
 
 const columns = [
     { id: 'id', label: 'ID', minWidth: 60 },
@@ -20,9 +19,8 @@ const columns = [
 const ViewPCPage = () => {
     const [pcs, setPCs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [alertOpen, setAlertOpen] = useState(false);
-    const [alertType, setAlertType] = useState("success");
-    const [alertMessage, setAlertMessage] = useState("");
+    const [message, setMessage] = useState("");
+    const [search, setSearch] = useState("");
 
     // Fetch all primary cooperatives on mount
     useEffect(() => {
@@ -35,9 +33,7 @@ const ViewPCPage = () => {
             const response = await axios.get("http://127.0.0.1:8000/accounts/users?role=pcs");
             setPCs(response.data);
         } catch {
-            setAlertType("danger");
-            setAlertMessage("Failed to load primary cooperatives.");
-            setAlertOpen(true);
+            setMessage("Failed to load primary cooperatives.");
         }
         setLoading(false);
     };
@@ -54,26 +50,52 @@ const ViewPCPage = () => {
                     pc.id === pcId ? { ...pc, is_active: !currentState } : pc
                 )
             );
-            setAlertType("success");
-            setAlertMessage("Primary cooperative state updated.");
-            setAlertOpen(true);
+            setMessage("Primary cooperative state updated.");
         } catch {
-            setAlertType("danger");
-            setAlertMessage("Failed to update state.");
-            setAlertOpen(true);
+            setMessage("Failed to update state.");
         }
     };
 
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">All Primary Cooperatives</h2>
-            <AnimatedAlert
-                open={alertOpen}
-                message={alertMessage}
-                type={alertType}
-                onClose={() => setAlertOpen(false)}
-                duration={1500}
-            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <h2 className="text-2xl font-bold">All Primary Cooperatives</h2>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{
+                            padding: '8px 12px',
+                            borderRadius: 6,
+                            border: '1px solid #ccc',
+                            fontSize: 16,
+                            fontFamily: 'poppins, sans-serif',
+                        }}
+                    />
+                    <a
+                        href="/admin/pc/add"
+                        style={{
+                            background: '#16a34a',
+                            color: '#fff',
+                            padding: '8px 18px',
+                            borderRadius: 6,
+                            fontWeight: 'bold',
+                            fontFamily: 'poppins, sans-serif',
+                            fontSize: 16,
+                            textDecoration: 'none',
+                            transition: 'background 0.2s',
+                            display: 'inline-block',
+                        }}
+                        onMouseOver={e => e.currentTarget.style.background = '#15803d'}
+                        onMouseOut={e => e.currentTarget.style.background = '#16a34a'}
+                    >
+                        + Add PC
+                    </a>
+                </div>
+            </div>
+            {message && <div className="mb-4 text-blue-600">{message}</div>}
             {loading ? (
                 <div>Loading...</div>
             ) : (
@@ -99,7 +121,9 @@ const ViewPCPage = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {pcs.map((pc) => (
+                                {pcs.filter(pc =>
+                                    pc.username && pc.username.toLowerCase().includes(search.toLowerCase())
+                                ).map((pc) => (
                                     <TableRow hover tabIndex={-1} key={pc.id}>
                                         <TableCell>{pc.id}</TableCell>
                                         <TableCell>{pc.username}</TableCell>
@@ -112,6 +136,7 @@ const ViewPCPage = () => {
                                                     background: pc.is_active ? '#f59e42' : '#16a34a',
                                                     color: '#fff',
                                                     border: 'none',
+                                                    fontFamily: 'poppins, sans-serif',
                                                     borderRadius: '4px',
                                                     padding: '6px 16px',
                                                     cursor: 'pointer',

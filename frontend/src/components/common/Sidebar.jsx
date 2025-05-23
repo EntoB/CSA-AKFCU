@@ -54,7 +54,7 @@ const adminSections = [
         ],
     },
     {
-        title: "Production",
+        title: "Cooperatives",
         icon: <FaProjectDiagram />,
         links: [
             { to: "/admin/pc/add", icon: <FaPlus />, label: "Add PC" },

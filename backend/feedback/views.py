@@ -72,29 +72,33 @@ def view_feedback(request):
 # @csrf_exempt  # For local development; for production, use CSRF tokens properly
 def add_service(request):
     user = request.user
-    # Ensure the user is authorized (e.g., superadmin)
     if user.is_superuser != 1:
         return JsonResponse({'error': 'Unauthorized access'}, status=403)
 
     if request.method == 'POST':
         data, error = parse_json_request(request)
         if error:
-            return error  # Return error response if JSON parsing fails
-        print(f"Received data: {data}")
-        # Extract service details
+            return error
         name = data.get('name')
+        name_am = data.get('name_am', '')
+        name_or = data.get('name_or', '')
         description = data.get('description', '')
         category = data.get('category', '')
 
         if not name:
             return JsonResponse({'error': 'Service name is required'}, status=400)
 
-        # Create and save the service
-        service = Service.objects.create(name=name, description=description, category=category)
-        print(f"Service created: {service}")
+        service = Service.objects.create(
+            name=name,
+            name_am=name_am,
+            name_or=name_or,
+            description=description,
+            category=category
+        )
         return JsonResponse({'message': 'Service added successfully', 'service_id': service.id}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 from django.views.decorators.http import require_GET
 
