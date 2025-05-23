@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CooperativeSignUpForm = () => {
     const [form, setForm] = useState({
         phone_number: "",
         registration_key: "",
         password: "",
-        confirm_password: ""
+        confirm_password: "",
     });
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -26,6 +28,15 @@ const CooperativeSignUpForm = () => {
 
         if (form.password !== form.confirm_password) {
             setError("Passwords do not match.");
+            toast.error("Passwords do not match.", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             setIsLoading(false);
             return;
         }
@@ -36,30 +47,51 @@ const CooperativeSignUpForm = () => {
                 {
                     phone_number: form.phone_number,
                     registration_key: form.registration_key,
-                    password: form.password
+                    password: form.password,
                 },
                 {
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
                 }
             );
+
             if (response.status === 201) {
                 setMessage("Registration successful! Redirecting to login...");
+                toast.success("Registration successful! Redirecting to login...", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+
                 setForm({
                     phone_number: "",
                     registration_key: "",
                     password: "",
-                    confirm_password: ""
+                    confirm_password: "",
                 });
+
                 setTimeout(() => {
                     navigate("/login");
-                }, 1000);
+                }, 1500);
             }
         } catch (err) {
-            setError(
-                err.response?.data?.error ||
+            const errorMessage = err.response?.data?.error ||
                 err.response?.data?.detail ||
-                "Registration failed. Please check your details and try again."
-            );
+                "Registration failed. Please check your details and try again.";
+
+            setError(errorMessage);
+            toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -67,18 +99,39 @@ const CooperativeSignUpForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 flex items-center justify-center p-4">
+            {/* Toast container */}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
+
             <div className="max-w-md w-full">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-green-100">
                     <div className="bg-green-600 py-5 px-6 text-center">
-                        <svg className="w-12 h-12 mx-auto text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        <svg
+                            className="w-12 h-12 mx-auto text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="1.5"
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                            />
                         </svg>
                         <h2 className="text-2xl font-bold text-white mt-3">
                             Cooperative Registration
                         </h2>
-                        <p className="text-green-100 mt-1">
-                            Join our agricultural network
-                        </p>
+                        <p className="text-green-100 mt-1">Join our agricultural network</p>
                     </div>
 
                     <div className="p-6">
@@ -111,8 +164,18 @@ const CooperativeSignUpForm = () => {
                                         title="Phone number must start with 09 and be 10 digits"
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        <svg
+                                            className="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -133,8 +196,18 @@ const CooperativeSignUpForm = () => {
                                         placeholder="Your registration code"
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        <svg
+                                            className="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -155,8 +228,18 @@ const CooperativeSignUpForm = () => {
                                         placeholder="Create password"
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        <svg
+                                            className="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -177,8 +260,18 @@ const CooperativeSignUpForm = () => {
                                         placeholder="Confirm password"
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        <svg
+                                            className="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
@@ -188,18 +281,49 @@ const CooperativeSignUpForm = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className={`w-full ${isLoading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'} text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center`}
+                                    className={`w-full ${isLoading ? "bg-green-400" : "bg-green-600 hover:bg-green-700"} text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center`}
                                 >
                                     {isLoading ? (
                                         <>
-                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            <svg
+                                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
                                             </svg>
                                             Registering...
                                         </>
                                     ) : (
-                                        'Register Cooperative'
+                                        <>
+                                            <svg
+                                                className="w-5 h-5 mr-2"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                                />
+                                            </svg>
+                                            Register Cooperative
+                                        </>
                                     )}
                                 </button>
                             </div>
@@ -207,8 +331,11 @@ const CooperativeSignUpForm = () => {
 
                         <div className="mt-6 text-center">
                             <p className="text-sm text-gray-600">
-                                Already have an account?{' '}
-                                <a href="/login" className="text-green-600 hover:text-green-800 font-medium">
+                                Already have an account?{" "}
+                                <a
+                                    href="/login"
+                                    className="text-green-600 hover:text-green-800 font-medium"
+                                >
                                     Sign in here
                                 </a>
                             </p>
@@ -225,3 +352,5 @@ const CooperativeSignUpForm = () => {
 };
 
 export default CooperativeSignUpForm;
+
+

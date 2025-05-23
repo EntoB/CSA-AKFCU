@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'feedback',
-    'corsheaders'
+    'corsheaders',
+    'insights',
 ]
 
 # Custom user model

@@ -1,7 +1,11 @@
+
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 axios.defaults.withCredentials = true;
 
 const LoginForm = () => {
@@ -43,6 +47,17 @@ const LoginForm = () => {
                     last_login: response.data.last_login,
                 });
 
+                // Show success toast
+                toast.success("Login successful! Redirecting...", {
+                    position: "top-right",
+                    autoClose: 1500,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+
                 // Redirect based on role
                 const redirectPaths = {
                     admin: "/admin",
@@ -50,15 +65,30 @@ const LoginForm = () => {
                     farmer: "/farmer",
                 };
 
-                navigate(redirectPaths[response.data.role] || "/");
+                // Delay navigation slightly to allow toast to be seen
+                setTimeout(() => {
+                    navigate(redirectPaths[response.data.role] || "/");
+                }, 2000);
             }
         } catch (error) {
             console.error("Login error:", error);
-            setError(
+            const errorMessage =
                 error.response?.data?.error ||
                 error.response?.data?.detail ||
-                "Login failed. Please check your credentials and try again."
-            );
+                "Login failed. Please check your credentials and try again.";
+
+            setError(errorMessage);
+
+            // Show error toast
+            toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -66,6 +96,19 @@ const LoginForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 flex flex-col">
+            {/* Toast container */}
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
+
             {/* Main Content - flex-grow will make it take remaining space */}
             <main className="flex-grow container mx-auto px-4 py-12">
                 <div className="max-w-md mx-auto h-full flex flex-col justify-center">
@@ -273,3 +316,5 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
+
+

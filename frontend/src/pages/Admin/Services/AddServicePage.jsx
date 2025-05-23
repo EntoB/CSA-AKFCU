@@ -2,44 +2,68 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const AddServicePage = () => {
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [category, setCategory] = useState("");
+    const [form, setForm] = useState({
+        name: "",
+        description: "",
+        category: "",
+        newCategory: "",
+    });
     const [categories, setCategories] = useState([]);
-    const [newCategory, setNewCategory] = useState("");
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+    const [message, setMessage] = useState({ text: "", type: "" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Fetch unique categories from the backend
     useEffect(() => {
         const fetchCategories = async () => {
+            setIsLoading(true);
             try {
-                const response = await axios.get("http://127.0.0.1:8000/feedback/categories/");
+                const response = await axios.get(
+                    "http://127.0.0.1:8000/feedback/categories/"
+                );
                 setCategories(response.data.categories || []);
+                setMessage({ text: "", type: "" });
             } catch (err) {
+                setMessage({
+                    text: "Failed to load categories",
+                    type: "error",
+                });
                 setCategories([]);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchCategories();
     }, []);
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
     const handleCategoryChange = (e) => {
         const value = e.target.value;
-        setCategory(value);
-        if (value === "__new__") {
-            setNewCategory("");
-        }
+        setForm((prev) => ({
+            ...prev,
+            category: value,
+            newCategory: value === "__new__" ? "" : prev.newCategory,
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage("");
-        setError("");
+        setIsSubmitting(true);
+        setMessage({ text: "", type: "" });
 
-        const finalCategory = category === "__new__" ? newCategory : category;
+        const finalCategory =
+            form.category === "__new__" ? form.newCategory : form.category;
 
-        if (!name || !finalCategory) {
-            setError("Service name and category are required.");
+        if (!form.name || !finalCategory) {
+            setMessage({
+                text: "Service name and category are required",
+                type: "error",
+            });
+            setIsSubmitting(false);
             return;
         }
 
@@ -47,8 +71,8 @@ const AddServicePage = () => {
             const response = await axios.post(
                 "http://127.0.0.1:8000/feedback/add-service/",
                 {
-                    name,
-                    description,
+                    name: form.name,
+                    description: form.description,
                     category: finalCategory,
                 },
                 {
@@ -56,91 +80,199 @@ const AddServicePage = () => {
                     withCredentials: true,
                 }
             );
+
             if (response.status === 201) {
-                setMessage("Service added successfully!");
-                setName("");
-                setDescription("");
-                setCategory("");
-                setNewCategory("");
+                setMessage({
+                    text: "Service added successfully!",
+                    type: "success",
+                });
+                setForm({
+                    name: "",
+                    description: "",
+                    category: "",
+                    newCategory: "",
+                });
+                // Refresh categories if new one was added
+                if (form.category === "__new__") {
+                    const updatedResponse = await axios.get(
+                        "http://127.0.0.1:8000/feedback/categories/"
+                    );
+                    setCategories(updatedResponse.data.categories || []);
+                }
             }
         } catch (err) {
-            setError(
-                err.response?.data?.error ||
-                err.response?.data?.detail ||
-                "Failed to add service."
-            );
+            setMessage({
+                text:
+                    err.response?.data?.error ||
+                    err.response?.data?.detail ||
+                    "Failed to add service",
+                type: "error",
+            });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
-            >
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-                    Add Service
-                </h2>
-                {message && (
-                    <div className="mb-4 text-center text-green-600">{message}</div>
-                )}
-                {error && (
-                    <div className="mb-4 text-center text-red-600">{error}</div>
-                )}
-                <div className="mb-4">
-                    <label className="block text-gray-700 mb-2">Service Name:</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700 mb-2">Description:</label>
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-                    />
-                </div>
-                <div className="mb-6">
-                    <label className="block text-gray-700 mb-2">Category:</label>
-                    <select
-                        value={category}
-                        onChange={handleCategoryChange}
-                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-                        required
-                    >
-                        <option value="">Select a category</option>
-                        {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                                {cat}
-                            </option>
-                        ))}
-                        <option value="__new__">Add new category...</option>
-                    </select>
-                    {category === "__new__" && (
-                        <input
-                            type="text"
-                            placeholder="Enter new category"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}
-                            className="w-full mt-2 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-                            required
-                        />
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-extrabold text-gray-900">
+                            Add New Service
+                        </h1>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Fill in the details to register a new service
+                        </p>
+                    </div>
+
+                    {message.text && (
+                        <div
+                            className={`mb-6 p-4 rounded-md ${message.type === "success"
+                                    ? "bg-green-50 text-green-800"
+                                    : "bg-red-50 text-red-800"
+                                }`}
+                        >
+                            {message.text}
+                        </div>
                     )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label
+                                htmlFor="name"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Service Name *
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                                required
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="description"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows={3}
+                                value={form.description}
+                                onChange={handleChange}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="category"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
+                                Category *
+                            </label>
+                            {isLoading ? (
+                                <div className="mt-1 p-2 bg-gray-100 rounded-md text-sm text-gray-500">
+                                    Loading categories...
+                                </div>
+                            ) : (
+                                <>
+                                    <select
+                                        id="category"
+                                        name="category"
+                                        value={form.category}
+                                        onChange={handleCategoryChange}
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                        required
+                                    >
+                                        <option value="">Select a category</option>
+                                        {categories.map((cat) => (
+                                            <option key={cat} value={cat}>
+                                                {cat}
+                                            </option>
+                                        ))}
+                                        <option value="__new__">+ Create new category</option>
+                                    </select>
+
+                                    {form.category === "__new__" && (
+                                        <div className="mt-2">
+                                            <label
+                                                htmlFor="newCategory"
+                                                className="block text-sm font-medium text-gray-700 mb-1"
+                                            >
+                                                New Category Name *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="newCategory"
+                                                name="newCategory"
+                                                value={form.newCategory}
+                                                onChange={handleChange}
+                                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || isLoading}
+                                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${isSubmitting || isLoading
+                                        ? "opacity-70 cursor-not-allowed"
+                                        : ""
+                                    }`}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <svg
+                                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            ></path>
+                                        </svg>
+                                        Adding Service...
+                                    </>
+                                ) : (
+                                    "Add Service"
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <button
-                    type="submit"
-                    className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-                >
-                    Add Service
-                </button>
-            </form>
+            </div>
         </div>
     );
 };
 
 export default AddServicePage;
+
+
+
+
