@@ -8,15 +8,15 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-def generalize_feedback(feedback_text, service_name):
+def generalize_feedback(feedback_text, service_name, service_type):
     genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
     model = genai.GenerativeModel("gemini-1.5-flash-latest")
     try:
         prompt = f"""
-You are a helpful assistant that summarizes farmer feedback about the service: {service_name}.
+You are a helpful assistant that summarizes a farmer's feedback about the service: {service_name} that is categrorized under the {service_type} category.
 
 1. If the feedback is just something like "It is good", "It is bad", "It's okay", or doesn't explain anything, then ignore it and respond with: "ignore".
-2. If the feedback includes even a small detail or a recommendation, then give me a resonce containing only one or two short sentences that summarize what the farmer is trying to address.
+2. If the feedback includes even a small detail or a recommendation, then give me a resonce containing only one or two short sentences that summarize what the farmer is trying to address. If the feedback is too long, focus on the main points and make it 2 or 3 sentences.
 3. Emphasize issues where the farmer has a specific recommendation and improvement points.
 4. The summary should always be less than the original feedback.
 Feedback:

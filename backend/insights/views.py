@@ -27,43 +27,46 @@ def all_feedbacks(request):
 
     return JsonResponse(result, safe=False)
 
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def generate_recommendations(request):
     """
-    Generates recommendations for each service based on summarized feedbacks.
-    Only non-empty summarized feedbacks are used.
+    Generates recommendations based on filtered summarized feedbacks and admin needs sent from the frontend.
+    Expects POST data: { "summaries": [...], "admin_needs": "..." }
     """
-    feedbacks = load_all_feedback()
-    service_feedbacks = {}
-    service_cache = {}
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        summaries = data.get("summaries", [])
+        admin_needs = data.get("admin_needs", "general recommendations")
+    except Exception:
+        return JsonResponse({"recommendations": [], "message": "Invalid request data."}, safe=False)
 
-    for fb in feedbacks:
-        summarized = fb.get('summarized', '')
-        if summarized is None or not summarized.strip():
-            continue  # Skip empty or None summaries
-        service_id = fb.get('service_id')
-        if service_id not in service_feedbacks:
-            service_feedbacks[service_id] = []
-        service_feedbacks[service_id].append(summarized.strip())
+    rec_result = generate_recommendations_from_feedbacks(summaries, admin_needs)
+    # rec_result is a dict: {"recommendations": [...], "message": "..."}
 
-    results = []
-    for service_id, summaries in service_feedbacks.items():
-        # Get service name (cache to avoid repeated DB hits)
-        if service_id not in service_cache:
-            try:
-                service_cache[service_id] = Service.objects.get(id=service_id).name
-            except Service.DoesNotExist:
-                service_cache[service_id] = None
-        service_name = service_cache[service_id]
-        # Only call recommendations if service_name is not None
-        if service_name:
-            recommendations = generate_recommendations_from_feedbacks(summaries, service_name)
-        else:
-            recommendations = "No service name available."
-        results.append({
-            "service_id": service_id,
-            "service_name": service_name,
-            "recommendations": recommendations,
-            "feedback_count": len(summaries)
-        })
+    return JsonResponse(rec_result, safe=False)
 
-    return JsonResponse(results, safe=False)
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+from .models import SavedRecommendation
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def save_recommendations(request):
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        recommendations = data.get("recommendations", [])
+        filters = data.get("filters", {})
+        SavedRecommendation.objects.create(
+            recommendations=json.dumps(recommendations),
+            filters=json.dumps(filters)
+        )
+        return JsonResponse({"message": "Recommendations and filters saved successfully."})
+    except Exception as e:
+        return JsonResponse({"message": f"Failed to save: {str(e)}"}, status=400)

@@ -13,25 +13,53 @@ import Button from '@mui/material/Button';
 import FilterFeedbacks from "./FilterFeedbacks";
 
 const RecommendationsPage = () => {
-    const [recommendations, setRecommendations] = useState([]);
+    const [recommendations, setRecommendations] = useState({ recommendations: [], message: "" });
     const [recLoading, setRecLoading] = useState(false);
     const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
+    const [filters, setFilters] = useState({});
     const [loading, setLoading] = useState(false);
 
-    const handleSelect = useCallback((feedbacks) => {
+    // Accept filters as second argument
+    const handleSelect = useCallback((feedbacks, filters) => {
         setFilteredFeedbacks(feedbacks);
+        setFilters(filters);
     }, []);
 
     const handleGenerateRecommendations = async () => {
         setRecLoading(true);
         try {
-            const res = await fetch("http://127.0.0.1:8000/insights/recommendations/");
+            const res = await fetch("http://127.0.0.1:8000/insights/recommendations/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    summaries: filteredFeedbacks.map(fb => fb.summarized).filter(Boolean),
+                    // admin_needs: "general recommendations" // Not needed as per your request
+                })
+            });
             const data = await res.json();
             setRecommendations(data);
         } catch (err) {
-            setRecommendations([{ service_name: "Error", recommendations: "Failed to generate recommendations." }]);
+            setRecommendations({ recommendations: [], message: "Failed to generate recommendations." });
         } finally {
             setRecLoading(false);
+        }
+    };
+
+    // Save recommendations and filters
+    const handleSaveRecommendations = async () => {
+        try {
+            const res = await fetch("http://127.0.0.1:8000/insights/save-recommendations/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    recommendations: recommendations.recommendations,
+                    filters: filters
+                })
+            });
+            const data = await res.json();
+            alert(data.message);
+        } catch (err) {
+            alert("Failed to save recommendations.");
         }
     };
 
@@ -99,21 +127,33 @@ const RecommendationsPage = () => {
                 </Button>
             </Box>
 
-            {recommendations.length > 0 && (
+            {((Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0) || recommendations.message) && (
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h5" fontWeight="bold" gutterBottom>
                         Recommendations
                     </Typography>
-                    {recommendations.map((rec, idx) => (
-                        <Paper key={idx} sx={{ p: 2, mb: 2 }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                                {rec.service_name || <i>Unknown Service</i>}
-                            </Typography>
-                            <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
-                                {rec.recommendations}
-                            </Typography>
-                        </Paper>
-                    ))}
+                    {recommendations.message && (
+                        <Typography color="error" sx={{ mb: 2 }}>
+                            {recommendations.message}
+                        </Typography>
+                    )}
+                    {Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0 && (
+                        <ul style={{ paddingLeft: 24 }}>
+                            {recommendations.recommendations.map((rec, idx) => (
+                                <li key={idx}>{rec}</li>
+                            ))}
+                        </ul>
+                    )}
+                    {Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0 && (
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ mt: 2 }}
+                            onClick={handleSaveRecommendations}
+                        >
+                            Save Recommendations & Filters
+                        </Button>
+                    )}
                 </Box>
             )}
         </Box>

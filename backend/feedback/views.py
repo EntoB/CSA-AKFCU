@@ -68,7 +68,7 @@ def submit_feedback(request):
             responses_remaining = getattr(admin, 'number_of_farmers', 5)
 
         # Summarize feedback using Gemini/LLM
-        summarized = generalize_feedback(message_in_english, service.name)
+        summarized = generalize_feedback(message_in_english, service.name, service.category)
         if summarized == True:
             return JsonResponse({'error': 'Gemini generalization error'}, status=500)
         feedback = Feedback.objects.create(
