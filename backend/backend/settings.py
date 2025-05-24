@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'feedback',
     'corsheaders',
     'insights',
+    'rest_framework',
 ]
 
 # Custom user model

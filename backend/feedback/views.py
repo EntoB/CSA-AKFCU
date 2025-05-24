@@ -87,31 +87,16 @@ def submit_feedback(request):
         return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment, 'summary': summarized}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-@require_GET
+
+
+from .serializers import FeedbackSerializer
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+@api_view(['GET'])
 def all_feedbacks(request):
-    feedbacks = (
-        Feedback.objects
-        .select_related('customer', 'service')
-        .order_by('-created_at')
-    )
-    feedback_data = [
-        {
-            'id': fb.id,
-            'customer': fb.customer.username if fb.customer else '',
-            'service_id': fb.service.id if fb.service else None,
-            'service_name': fb.service.name if fb.service else '',
-            'category': fb.service.category if fb.service else '',
-            'cooperative': getattr(fb.customer, 'last_name', ''),  # adjust if you have a better field for cooperative
-            'message': fb.message,
-            'sentiment': fb.sentiment,
-            'created_at': fb.created_at.strftime('%Y-%m-%d'),
-            'summarized': fb.summarized,
-        }
-        for fb in feedbacks
-    ]
-    return JsonResponse({'feedbacks': feedback_data}, status=200)
-
-
+    feedbacks = Feedback.objects.all()
+    serializer = FeedbackSerializer(feedbacks, many=True)
+    return Response({'feedbacks': serializer.data})
 
 # @user_passes_test(lambda u: u.role == 'superadmin')
 def view_feedback(request):
