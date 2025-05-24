@@ -82,3 +82,41 @@ def translate_text(text, source_lang="Autodetect"):
     except Exception as e:
         print(f"Translation failed: {str(e)}")
         return None
+
+import requests
+
+def classify_sentiment_with_api(text):
+    """
+    Calls the local sentiment analysis API to classify the given text.
+    Returns a dict with predictions from both custom and pretrained models.
+    """
+    url = "http://127.0.0.1:9000/api/analyze/"
+    try:
+        response = requests.post(
+            url,
+            json={"text": text},
+            headers={"Content-Type": "application/json"},
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+        print(f"Sentiment API response: {data}")
+        # Example return:
+        # {
+        #   'predictions': {
+        #       'custom_model': {'sentiment': 'positive', 'model_type': 'random_forest'},
+        #       'pretrained_model': {'sentiment': 'positive', 'confidence': 0.98, 'model_type': 'roberta'}
+        #   },
+        #   'status': 'success'
+        # }
+        return data
+    except Exception as e:
+        print(f"Sentiment API error: {str(e)}")
+        return {
+            "predictions": {
+                "custom_model": {"sentiment": "unknown", "model_type": "random_forest"},
+                "pretrained_model": {"sentiment": "unknown", "confidence": 0.0, "model_type": "roberta"}
+            },
+            "status": "error",
+            "error": str(e)
+        }

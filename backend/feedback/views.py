@@ -13,29 +13,7 @@ from django.http import JsonResponse
 
 from django.views.decorators.http import require_GET
 
-@require_GET
-def all_feedbacks(request):
-    feedbacks = (
-        Feedback.objects
-        .select_related('customer', 'service')
-        .order_by('-created_at')
-    )
-    feedback_data = [
-        {
-            'id': fb.id,
-            'customer': fb.customer.username if fb.customer else '',
-            'service_id': fb.service.id if fb.service else None,
-            'service_name': fb.service.name if fb.service else '',
-            'category': fb.service.category if fb.service else '',
-            'cooperative': getattr(fb.customer, 'last_name', ''),  # adjust if you have a better field for cooperative
-            'message': fb.message,
-            'sentiment': fb.sentiment,
-            'created_at': fb.created_at.strftime('%Y-%m-%d'),
-            'summarized': fb.summarized,
-        }
-        for fb in feedbacks
-    ]
-    return JsonResponse({'feedbacks': feedback_data}, status=200)
+from feedback.helpers.utils import classify_sentiment_with_api
 
 @csrf_exempt
 def submit_feedback(request):
@@ -50,15 +28,24 @@ def submit_feedback(request):
         rating = data.get('rating', 5)
         specific_service = data.get('specific_service', '')
 
-        sentiment_label_1 = ''
-        sentiment_label_2 = ''
-
         # Always translate to English using autodetect
         translated = translate_text(message, "Autodetect")
         message_in_english = translated if translated else ""
 
         # Sentiment analysis should be on the English message
         sentiment = analyze_sentiment(message_in_english)
+
+        # --- Call your custom sentiment API here ---
+        sentiment_labels = classify_sentiment_with_api(message_in_english)
+        sentiment_label_1 = ""
+        sentiment_label_2 = ""
+        if (
+            sentiment_labels
+            and sentiment_labels.get("status") == "success"
+            and "predictions" in sentiment_labels
+        ):
+            sentiment_label_1 = sentiment_labels["predictions"]["custom_model"]["sentiment"]
+            sentiment_label_2 = sentiment_labels["predictions"]["pretrained_model"]["sentiment"]
 
         try:
             service = Service.objects.get(id=service_id)
@@ -84,6 +71,33 @@ def submit_feedback(request):
         return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment, 'summary': summarized}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@require_GET
+def all_feedbacks(request):
+    feedbacks = (
+        Feedback.objects
+        .select_related('customer', 'service')
+        .order_by('-created_at')
+    )
+    feedback_data = [
+        {
+            'id': fb.id,
+            'customer': fb.customer.username if fb.customer else '',
+            'service_id': fb.service.id if fb.service else None,
+            'service_name': fb.service.name if fb.service else '',
+            'category': fb.service.category if fb.service else '',
+            'cooperative': getattr(fb.customer, 'last_name', ''),  # adjust if you have a better field for cooperative
+            'message': fb.message,
+            'sentiment': fb.sentiment,
+            'created_at': fb.created_at.strftime('%Y-%m-%d'),
+            'summarized': fb.summarized,
+        }
+        for fb in feedbacks
+    ]
+    return JsonResponse({'feedbacks': feedback_data}, status=200)
+
+
+
 # @user_passes_test(lambda u: u.role == 'superadmin')
 def view_feedback(request):
     if request.method == 'GET':
