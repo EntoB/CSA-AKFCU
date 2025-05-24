@@ -288,6 +288,8 @@ def get_coop_farmers(request):
 
 from django.views.decorators.csrf import csrf_exempt
 
+from feedback.models import Feedback
+
 @csrf_exempt
 def update_user_services(request):
     if request.method == 'POST':
@@ -300,11 +302,24 @@ def update_user_services(request):
                 user = User.objects.get(id=user_data['id'])
                 user.active_services = user_data.get('active_services', [])
                 user.save()
+                # Reset responses_remaining for the last feedback for each service
+                for service_id in user.active_services:
+                    last_feedback = (
+                        Feedback.objects
+                        .filter(customer=user, service_id=service_id)
+                        .order_by('-created_at')
+                        .first()
+                    )
+                    if last_feedback:
+                        # Optionally, get the admin's number_of_farmers
+                        admin = User.objects.filter(role='admin').first()
+                        reset_value = admin.number_of_farmers if admin and admin.number_of_farmers else 5
+                        last_feedback.responses_remaining = reset_value
+                        last_feedback.save()
             except User.DoesNotExist:
                 continue
         return JsonResponse({'message': 'User services updated successfully.'})
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 
 @csrf_exempt
 def update_pc_farmers(request, pc_id):

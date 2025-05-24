@@ -27,6 +27,6 @@ class Feedback(models.Model):
     specific_service = models.CharField(max_length=255, blank=True, null=True)  # New column
     summarized = models.TextField(blank=True, null=True)  # New column
     created_at = models.DateTimeField(auto_now_add=True)
-
+    responses_remaining = models.IntegerField(default=5, null=False)
     def __str__(self):
         return f"{self.customer.username} - {self.service.name} - {self.sentiment}"

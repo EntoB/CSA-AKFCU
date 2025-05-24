@@ -11,6 +11,7 @@ import RadarSentimentByCategory from '../../components/admin/visuals/RadarView';
 import SentimentTrendLineChart from '../../components/admin/visuals/LineGraph';
 import PieChartSentiment from '../../components/admin/visuals/PieChart';
 import RecentResponsesTable from '../../components/admin/RecentResponsesTable';
+import AdminFeedbackSettings from '../../components/admin/AdminFeedbackSettings'; // <-- Import the settings component
 
 const AdminHome = () => {
     const [users, setUsers] = useState([]);
@@ -100,6 +101,10 @@ const AdminHome = () => {
                         <div className="w-full md:w-1/3">
                             <PieChartSentiment className="w-full h-full" />
                         </div>
+                    </div>
+                    {/* Admin Feedback Settings */}
+                    <div className="mt-8">
+                        <AdminFeedbackSettings />
                     </div>
                     {/* Recent Responses Table */}
                     <div className="mt-8">

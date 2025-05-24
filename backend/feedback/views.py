@@ -9,11 +9,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
-
+from django.utils import timezone
+from datetime import timedelta
 from django.views.decorators.http import require_GET
-
 from feedback.helpers.utils import classify_sentiment_with_api
+from accounts.models import User
+
 
 @csrf_exempt
 def submit_feedback(request):
@@ -52,6 +53,20 @@ def submit_feedback(request):
         except Service.DoesNotExist:
             return JsonResponse({'error': 'Service not found.'}, status=404)
 
+        # --- Responses Remaining Logic ---
+        last_feedback = (
+            Feedback.objects
+            .filter(customer=customer, service=service)
+            .order_by('-created_at')
+            .first()
+        )
+        if last_feedback:
+            responses_remaining = max(last_feedback.responses_remaining - 1, 0)
+        else:
+            # Get admin's number_of_farmers or default to 5
+            admin = User.objects.filter(is_superuser=True).first()
+            responses_remaining = getattr(admin, 'number_of_farmers', 5)
+
         # Summarize feedback using Gemini/LLM
         summarized = generalize_feedback(message_in_english, service.name)
         if summarized == True:
@@ -67,11 +82,11 @@ def submit_feedback(request):
             message_in_english=message_in_english,
             specific_service=specific_service,
             summarized=summarized,
+            responses_remaining=responses_remaining,  # <-- set here
         )
         return JsonResponse({'message': 'Feedback submitted successfully', 'sentiment': sentiment, 'summary': summarized}, status=201)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 @require_GET
 def all_feedbacks(request):
     feedbacks = (
@@ -186,9 +201,10 @@ def delete_service(request, service_id):
             return JsonResponse({'error': 'Service not found.'}, status=404)
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
+
 from django.utils import timezone
 from datetime import timedelta
-from django.views.decorators.http import require_GET
+from accounts.models import User
 
 @require_GET
 def can_give_feedback(request):
@@ -197,14 +213,31 @@ def can_give_feedback(request):
     if not service_id:
         return JsonResponse({'error': 'service_id is required'}, status=400)
     feedbacks = Feedback.objects.filter(customer=user, service_id=service_id).order_by('-created_at')
-    count = feedbacks.count()
-    if count >= 3:
-        return JsonResponse({'allowed': False, 'reason': 'You have reached the feedback limit for this service.'})
-    if count > 0:
+    if feedbacks.exists():
         last_feedback = feedbacks.first()
-        if timezone.now() - last_feedback.created_at < timedelta(seconds=24* 60 * 60):
-            return JsonResponse({'allowed': False, 'reason': 'You must wait 24 hours before submitting another feedback for this service.'})
-    return JsonResponse({'allowed': True})
+        # Check responses_remaining
+        if hasattr(last_feedback, "responses_remaining") and last_feedback.responses_remaining == 0:
+            return JsonResponse({'allowed': False, 'reason': 'You have no responses remaining for this service.'})
+        # Check time since last feedback
+        admin = User.objects.filter(is_superuser=True).first()
+        try:
+            # last_name is a string representing days (e.g., "2" for 2 days)
+            wait_days = int(admin.last_name) if admin and admin.last_name and admin.last_name.isdigit() else 1
+        except Exception:
+            wait_days = 1
+        wait_delta = timedelta(days=wait_days)
+        time_since_last = timezone.now() - last_feedback.created_at
+        if time_since_last < wait_delta:
+            hours_left = int((wait_delta - time_since_last).total_seconds() // 3600) + 1
+            return JsonResponse({
+                'allowed': False,
+                'reason': f'You must wait {wait_days} day(s) ({hours_left} hour(s) left) before submitting another feedback for this service.'
+            })
+        return JsonResponse({'allowed': True})
+    else:
+        # No feedback found, allow by default
+        return JsonResponse({'allowed': True})
+    
 
 from django.views.decorators.http import require_GET
 
@@ -227,3 +260,38 @@ def recent_feedbacks(request):
         for fb in feedbacks
     ]
     return JsonResponse({'feedbacks': feedback_data}, status=200)
+
+
+
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def admin_feedback_settings(request):
+    admins = User.objects.filter(is_superuser=True)
+    if not admins.exists():
+        return JsonResponse({'error': 'Admin user not found.'}, status=404)
+
+    if request.method == "GET":
+        # Use the first admin as the source of truth
+        admin = admins.first()
+        return JsonResponse({
+            "response_limit": getattr(admin, "number_of_farmers", 5),
+            "consecutive_days_limit": getattr(admin, "last_name", "1"),
+        })
+
+    if request.method == "POST":
+        data, error = parse_json_request(request)
+        if error:
+            return error
+        response_limit = data.get("response_limit")
+        consecutive_days_limit = data.get("consecutive_days_limit")
+        for admin in admins:
+            if response_limit is not None:
+                admin.number_of_farmers = int(response_limit)
+            if consecutive_days_limit is not None:
+                admin.last_name = str(consecutive_days_limit)
+            admin.save()
+        return JsonResponse({"message": "Settings updated successfully."})

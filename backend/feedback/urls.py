@@ -11,4 +11,5 @@ urlpatterns = [
     path('can-give-feedback/', views.can_give_feedback, name='can_give_feedback'),
     path('recent-feedbacks/', views.recent_feedbacks, name='recent_feedbacks'),
     path('all-feedbacks/', views.all_feedbacks, name='all_feedbacks'),
+    path('admin-feedback-settings/', views.admin_feedback_settings, name='admin_feedback_settings'),
 ]
