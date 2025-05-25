@@ -10,7 +10,6 @@ export default function AdminLayout() {
             <main className="flex-1 py-8 ml-[48px] transition-all duration-200">
                 <Outlet /> {/* This renders the cooperative child routes */}
             </main>
-            <Footer />
         </div>
     );
 }

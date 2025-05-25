@@ -52,19 +52,32 @@ def analyze_sentiment(message):
 
 
 
+from langdetect import detect, LangDetectException
+
 def translate_text(text, source_lang="Autodetect"):
     """Translate text using MyMemory API, only if not English"""
     try:
-        # Auto-detect the language if set to "Autodetect"
-        if source_lang == "Autodetect":
-            detected_lang = detect(text)
+        # Try to detect language, fallback to 'am' if detection fails and text contains Amharic characters
+        try:
+            lang = detect(text)
+        except LangDetectException:
+            # Fallback: check for Amharic unicode range
+            if any('\u1200' <= c <= '\u137F' for c in text):
+                lang = "am"
+            else:
+                lang = "en"  # Default to English if detection fails and not Amharic
+
+        if lang == "am":
+            detected_lang = "am"
+        elif source_lang == "Autodetect":
+            detected_lang = lang
         else:
             detected_lang = source_lang.lower()
 
         # If the text is already in English, return it as-is
         if detected_lang == "en":
             return text
-
+        print(f"Detected language: {detected_lang}")
         # Otherwise, call the API to translate
         url = "https://api.mymemory.translated.net/get"
         params = {
@@ -80,9 +93,10 @@ def translate_text(text, source_lang="Autodetect"):
         return None
 
     except Exception as e:
-        print(f"Translation failed: {str(e)}")
+        print(f"Translation failed: {str(e)} {text}")
         return None
-
+    
+    
 import requests
 
 def classify_sentiment_with_api(text):

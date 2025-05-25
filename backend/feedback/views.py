@@ -31,7 +31,9 @@ def submit_feedback(request):
 
         # Always translate to English using autodetect
         translated = translate_text(message, "Autodetect")
-        message_in_english = translated if translated else ""
+        if not translated:
+            return JsonResponse({'error': 'Translation to English failed.'}, status=500)
+        message_in_english = translated
 
         # Sentiment analysis should be on the English message
         sentiment = analyze_sentiment(message_in_english)
@@ -76,9 +78,9 @@ def submit_feedback(request):
             service=service,
             message=message,
             rating=rating,
-            sentiment=sentiment,
+            sentiment=sentiment_label_2,
             sentiment_label_1=sentiment_label_1,
-            sentiment_label_2=sentiment_label_2,
+            sentiment_label_2=sentiment,
             message_in_english=message_in_english,
             specific_service=specific_service,
             summarized=summarized,
