@@ -1,18 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { motion } from "framer-motion";
-
-// Dummy data: overall sentiment counts by service category
-const sentimentByCategoryData = [
-    { category: "Seed", positive: 22, neutral: 5, negative: 2 },
-    { category: "Fertilizers", positive: 8, neutral: 7, negative: 3 },
-    { category: "Veterinary", positive: 10, neutral: 4, negative: 6 }, // Changed here
-    { category: "Fruits", positive: 15, neutral: 3, negative: 1 },
-    { category: "Advices", positive: 9, neutral: 8, negative: 2 },
-    { category: "Others", positive: 5, neutral: 2, negative: 4 },
-];
+import axios from "axios";
 
 const OverallSentimentByCategory = () => {
+    const [sentimentByCategoryData, setSentimentByCategoryData] = useState([]);
+
+    useEffect(() => {
+        axios.get("http://127.0.0.1:8000/feedback/all-feedbacks/")
+            .then(res => {
+                const feedbacks = res.data.feedbacks || [];
+                // Group by category and count sentiments
+                const grouped = {};
+                feedbacks.forEach(fb => {
+                    const cat = fb.category || "Unknown";
+                    if (!grouped[cat]) {
+                        grouped[cat] = { category: cat, positive: 0, neutral: 0, negative: 0 };
+                    }
+                    if (fb.sentiment) {
+                        const s = fb.sentiment.toLowerCase();
+                        if (s === "positive") grouped[cat].positive += 1;
+                        else if (s === "neutral") grouped[cat].neutral += 1;
+                        else if (s === "negative") grouped[cat].negative += 1;
+                    }
+                });
+                setSentimentByCategoryData(Object.values(grouped));
+            });
+    }, []);
+
     return (
         <motion.div
             className='bg-green-100 bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 border border-green-300'
@@ -27,12 +42,12 @@ const OverallSentimentByCategory = () => {
                         <CartesianGrid strokeDasharray='3 3' stroke='#A7F3D0' />
                         <XAxis
                             dataKey='category'
-                            stroke='#000000' // Black axis
-                            tick={{ fill: '#000', fontWeight: 600 }} // Black category text
+                            stroke='#000000'
+                            tick={{ fill: '#000', fontWeight: 600 }}
                         />
                         <YAxis
-                            stroke='#000000' // Black axis
-                            tick={{ fill: '#000', fontWeight: 600 }} // Black numbers
+                            stroke='#000000'
+                            tick={{ fill: '#000', fontWeight: 600 }}
                         />
                         <Tooltip
                             contentStyle={{

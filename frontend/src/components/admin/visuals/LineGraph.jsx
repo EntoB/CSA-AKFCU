@@ -1,23 +1,40 @@
+import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
-
-// Use the same sentiment data as previous components, but for each month
-const sentimentTrendData = [
-    { name: "Jul", positive: 12, neutral: 5, negative: 2 },
-    { name: "Aug", positive: 10, neutral: 7, negative: 3 },
-    { name: "Sep", positive: 15, neutral: 6, negative: 4 },
-    { name: "Oct", positive: 13, neutral: 8, negative: 2 },
-    { name: "Nov", positive: 16, neutral: 7, negative: 3 },
-    { name: "Dec", positive: 18, neutral: 5, negative: 2 },
-    { name: "Jan", positive: 14, neutral: 6, negative: 4 },
-    { name: "Feb", positive: 13, neutral: 8, negative: 3 },
-    { name: "Mar", positive: 17, neutral: 7, negative: 2 },
-    { name: "Apr", positive: 15, neutral: 6, negative: 3 },
-    { name: "May", positive: 19, neutral: 5, negative: 2 },
-    { name: "Jun", positive: 20, neutral: 4, negative: 1 },
-];
+import axios from "axios";
 
 const SentimentTrendLineChart = () => {
+    const [sentimentTrendData, setSentimentTrendData] = useState([]);
+
+    useEffect(() => {
+        axios.get("http://127.0.0.1:8000/feedback/all-feedbacks/")
+            .then(res => {
+                const feedbacks = res.data.feedbacks || [];
+                // Group by month and count sentiments
+                const grouped = {};
+                feedbacks.forEach(fb => {
+                    if (!fb.created_at) return;
+                    const date = new Date(fb.created_at);
+                    const month = date.toLocaleString('default', { month: 'short' });
+                    if (!grouped[month]) {
+                        grouped[month] = { name: month, positive: 0, neutral: 0, negative: 0 };
+                    }
+                    if (fb.sentiment) {
+                        const s = fb.sentiment.toLowerCase();
+                        if (s === "positive") grouped[month].positive += 1;
+                        else if (s === "neutral") grouped[month].neutral += 1;
+                        else if (s === "negative") grouped[month].negative += 1;
+                    }
+                });
+                // Sort months in calendar order
+                const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const sorted = monthOrder
+                    .map(m => grouped[m])
+                    .filter(Boolean);
+                setSentimentTrendData(sorted);
+            });
+    }, []);
+
     return (
         <motion.div
             className='bg-green-100 bg-opacity-60 backdrop-blur-md shadow-lg rounded-xl p-6 border border-green-300'

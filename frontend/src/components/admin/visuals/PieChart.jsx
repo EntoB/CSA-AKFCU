@@ -1,15 +1,38 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import axios from "axios";
 
-// Dummy data for sentiment distribution
-const sentimentPieData = [
-    { name: "Positive", value: 65 },
-    { name: "Neutral", value: 25 },
-    { name: "Negative", value: 10 },
-];
 const COLORS = ["#10B981", "#F59E0B", "#EF4444"]; // green, orange, red
 
 const PieChartSentiment = () => {
+    const [sentimentPieData, setSentimentPieData] = useState([
+        { name: "Positive", value: 0 },
+        { name: "Neutral", value: 0 },
+        { name: "Negative", value: 0 },
+    ]);
+
+    useEffect(() => {
+        axios.get("http://127.0.0.1:8000/feedback/all-feedbacks/")
+            .then(res => {
+                const feedbacks = res.data.feedbacks || [];
+                const counts = { Positive: 0, Neutral: 0, Negative: 0 };
+                feedbacks.forEach(fb => {
+                    if (fb.sentiment) {
+                        const s = fb.sentiment.toLowerCase();
+                        if (s === "positive") counts.Positive += 1;
+                        else if (s === "neutral") counts.Neutral += 1;
+                        else if (s === "negative") counts.Negative += 1;
+                    }
+                });
+                setSentimentPieData([
+                    { name: "Positive", value: counts.Positive },
+                    { name: "Neutral", value: counts.Neutral },
+                    { name: "Negative", value: counts.Negative },
+                ]);
+            });
+    }, []);
+
     return (
         <motion.div
             className='bg-green-100 bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 border border-green-300'

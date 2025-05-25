@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
     ResponsiveContainer,
@@ -9,18 +10,33 @@ import {
     Legend,
     Tooltip,
 } from "recharts";
-
-// Use the same categories and sentiment data as the bar graph
-const sentimentByCategoryData = [
-    { category: "Seed", positive: 82, neutral: 53, negative: 23 },
-    { category: "Fertilizers", positive: 78, neutral: 57, negative: 30 },
-    { category: "Veterinary", positive: 90, neutral: 44, negative: 26 },
-    { category: "Fruits", positive: 65, neutral: 43, negative: 37 },
-    { category: "Advices", positive: 89, neutral: 48, negative: 32 },
-    { category: "Others", positive: 67, neutral: 52, negative: 25 },
-];
+import axios from "axios";
 
 const RadarSentimentByCategory = () => {
+    const [sentimentByCategoryData, setSentimentByCategoryData] = useState([]);
+
+    useEffect(() => {
+        axios.get("http://127.0.0.1:8000/feedback/all-feedbacks/")
+            .then(res => {
+                const feedbacks = res.data.feedbacks || [];
+                // Group by category and count sentiments
+                const grouped = {};
+                feedbacks.forEach(fb => {
+                    const cat = fb.category || "Unknown";
+                    if (!grouped[cat]) {
+                        grouped[cat] = { category: cat, positive: 0, neutral: 0, negative: 0 };
+                    }
+                    if (fb.sentiment) {
+                        const s = fb.sentiment.toLowerCase();
+                        if (s === "positive") grouped[cat].positive += 1;
+                        else if (s === "neutral") grouped[cat].neutral += 1;
+                        else if (s === "negative") grouped[cat].negative += 1;
+                    }
+                });
+                setSentimentByCategoryData(Object.values(grouped));
+            });
+    }, []);
+
     return (
         <motion.div
             className='bg-green-100 bg-opacity-60 backdrop-filter backdrop-blur-lg shadow-lg rounded-xl p-6 border border-green-300'
@@ -34,7 +50,7 @@ const RadarSentimentByCategory = () => {
                     <RadarChart cx='50%' cy='50%' outerRadius='80%' data={sentimentByCategoryData}>
                         <PolarGrid stroke='#A7F3D0' />
                         <PolarAngleAxis dataKey='category' stroke='#000' tick={{ fill: '#000', fontWeight: 600 }} />
-                        <PolarRadiusAxis angle={30} domain={[0, 20]} stroke='#000' tick={{ fill: '#000', fontWeight: 600 }} />
+                        <PolarRadiusAxis stroke='#000' tick={{ fill: '#000', fontWeight: 600 }} />
                         <Radar name='Positive' dataKey='positive' stroke='#10B981' fill='#10B981' fillOpacity={0.5} />
                         <Radar name='Neutral' dataKey='neutral' stroke='#F59E0B' fill='#F59E0B' fillOpacity={0.5} />
                         <Radar name='Negative' dataKey='negative' stroke='#EF4444' fill='#FCA5A5' fillOpacity={0.5} />
