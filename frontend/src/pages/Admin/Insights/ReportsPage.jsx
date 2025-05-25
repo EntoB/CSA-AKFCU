@@ -1,5 +1,14 @@
 import React, { useRef, useState, useCallback } from "react";
 import FilterFeedbacks from "./FilterFeedbacks";
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
 const groupBy = (array, key) => {
     return array.reduce((result, item) => {
@@ -75,31 +84,43 @@ const ReportsPage = () => {
     overallStats.neutralRatio = overallStats.total ? ((overallStats.neutral / overallStats.total) * 100).toFixed(1) : "0.0";
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Printable Feedback Report</h2>
+        <Box sx={{ p: 4 }}>
+            <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Poppins', fontSize: '2rem' }}>Printable Feedback Report</h2>
             <FilterFeedbacks onSelect={handleSelect} />
 
-            <div className="flex flex-wrap gap-4 my-4 items-center">
-                <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            <Box sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 3,
+                my: 4,
+                justifyContent: 'flex-start',
+                flexWrap: 'wrap',
+            }}>
+                <Button
+                    variant="contained"
+                    color="primary"
                     onClick={handlePrint}
+                    sx={{ fontFamily: 'Poppins', fontSize: '1rem', minWidth: 160, mb: { xs: 2, sm: 0 } }}
                 >
                     Print Report
-                </button>
-                <label className="font-semibold ml-4">Group rows by:</label>
-                <select
-                    className="border rounded px-2 py-1"
-                    value={rowType}
-                    onChange={e => setRowType(e.target.value)}
-                >
-                    <option value="cooperative">Primary Cooperative</option>
-                    <option value="service_name">Service</option>
-                    <option value="category">Service Category</option>
-                </select>
-            </div>
+                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <label style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: '1rem', marginRight: 8 }}>Group rows by:</label>
+                    <select
+                        style={{ fontFamily: 'Poppins', fontSize: '1rem', height: 40, borderRadius: 6, border: '1px solid #ccc', padding: '0 12px' }}
+                        value={rowType}
+                        onChange={e => setRowType(e.target.value)}
+                    >
+                        <option value="cooperative">Primary Cooperative</option>
+                        <option value="service_name">Service</option>
+                        <option value="category">Service Category</option>
+                    </select>
+                </Box>
+            </Box>
 
             <div ref={reportRef}>
-                <div className="mb-6 flex flex-wrap gap-8">
+                <Box className="mb-6 flex flex-wrap gap-8" sx={{ fontFamily: 'Poppins', fontSize: '1.1rem' }}>
                     <div>
                         <div className="font-semibold">Total Responses:</div>
                         <div>{overallStats.total}</div>
@@ -116,85 +137,93 @@ const ReportsPage = () => {
                         <div className="font-semibold">Neutral:</div>
                         <div>{overallStats.neutral} ({overallStats.neutralRatio}%)</div>
                     </div>
-                </div>
-                <h3 className="text-xl font-bold mb-2">Feedback Sentiment by {rowType === "cooperative" ? "Primary Cooperative" : rowType === "service_name" ? "Service" : "Service Category"}</h3>
-                <table className="min-w-full border border-gray-300 mb-8">
-                    <thead>
-                        <tr>
-                            <th className="border px-4 py-2 text-left">
-                                {rowType === "cooperative" && "Primary Cooperative"}
-                                {rowType === "service_name" && "Service"}
-                                {rowType === "category" && "Service Category"}
-                            </th>
-                            <th className="border px-4 py-2">Total</th>
-                            <th className="border px-4 py-2">Positive</th>
-                            <th className="border px-4 py-2">Negative</th>
-                            <th className="border px-4 py-2">Neutral</th>
-                            <th className="border px-4 py-2">+ve %</th>
-                            <th className="border px-4 py-2">-ve %</th>
-                            <th className="border px-4 py-2">Neutral %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(rowStats).length === 0 ? (
-                            <tr>
-                                <td colSpan={8} className="border px-4 py-2 text-center">
-                                    No feedbacks found for the selected filters.
-                                </td>
-                            </tr>
-                        ) : (
-                            Object.entries(rowStats).map(([group, stats]) => (
-                                <tr key={group}>
-                                    <td className="border px-4 py-2">{group}</td>
-                                    <td className="border px-4 py-2">{stats.total}</td>
-                                    <td className="border px-4 py-2">{stats.positive}</td>
-                                    <td className="border px-4 py-2">{stats.negative}</td>
-                                    <td className="border px-4 py-2">{stats.neutral}</td>
-                                    <td className="border px-4 py-2">{stats.positiveRatio}%</td>
-                                    <td className="border px-4 py-2">{stats.negativeRatio}%</td>
-                                    <td className="border px-4 py-2">{stats.neutralRatio}%</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-                <h3 className="text-xl font-bold mb-4">Filtered Feedbacks</h3>
-                <table className="min-w-full border border-gray-300 mb-8">
-                    <thead>
-                        <tr>
-                            <th className="border px-4 py-2">User First Name</th>
-                            <th className="border px-4 py-2">Service Category</th>
-                            <th className="border px-4 py-2">Service Name</th>
-                            <th className="border px-4 py-2">Rating</th>
-                            <th className="border px-4 py-2">Sentiment</th>
-                            <th className="border px-4 py-2">Message (English)</th>
-                            <th className="border px-4 py-2">Message</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredFeedbacks.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} className="border px-4 py-2 text-center">
-                                    No feedbacks found for the selected filters.
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredFeedbacks.map((fb, idx) => (
-                                <tr key={idx}>
-                                    <td className="border px-4 py-2">{fb.user_first_name || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.category || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.service_name || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.rating || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.sentiment || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.message_in_english || "—"}</td>
-                                    <td className="border px-4 py-2">{fb.message || "—"}</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                </Box>
+                <h3 className="text-xl font-bold mb-2" style={{ fontFamily: 'Poppins', fontSize: '1.3rem' }}>Feedback Sentiment by {rowType === "cooperative" ? "Primary Cooperative" : rowType === "service_name" ? "Service" : "Service Category"}</h3>
+                <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 3, borderRadius: 2, bgcolor: '#e6f4ea', mb: 4 }}>
+                    <TableContainer sx={{ maxHeight: 600 }}>
+                        <Table stickyHeader aria-label="sentiment report table">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: '#16a34a' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 120, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>
+                                        {rowType === "cooperative" && "Primary Cooperative"}
+                                        {rowType === "service_name" && "Service"}
+                                        {rowType === "category" && "Service Category"}
+                                    </TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Total</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Positive</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Negative</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Neutral</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>+ve %</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>-ve %</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Neutral %</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {Object.keys(rowStats).length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={8} align="center" sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>
+                                            No feedbacks found for the selected filters.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    Object.entries(rowStats).map(([group, stats]) => (
+                                        <TableRow key={group} sx={{ height: 56 }}>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{group}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.total}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.positive}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.negative}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.neutral}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.positiveRatio}%</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.negativeRatio}%</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{stats.neutralRatio}%</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
+                <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Poppins', fontSize: '1.3rem' }}>Filtered Feedbacks</h3>
+                <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 3, borderRadius: 2, bgcolor: '#e6f4ea', mb: 4 }}>
+                    <TableContainer sx={{ maxHeight: 600 }}>
+                        <Table stickyHeader aria-label="filtered feedbacks table">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: '#16a34a' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 120, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>User First Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 120, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Service Category</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 120, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Service Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 80, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Rating</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 100, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Sentiment</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 200, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Message (English)</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', minWidth: 200, background: '#16a34a', color: '#fff', fontFamily: 'Poppins', fontSize: '1.1rem', height: 64 }}>Message</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {filteredFeedbacks.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} align="center" sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>
+                                            No feedbacks found for the selected filters.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredFeedbacks.map((fb, idx) => (
+                                        <TableRow key={idx} sx={{ height: 56 }}>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.user_first_name || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.category || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.service_name || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.rating || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.sentiment || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.message_in_english || "—"}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Poppins', fontSize: '1.05rem', height: 56 }}>{fb.message || "—"}</TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
             </div>
-        </div>
+        </Box>
     );
 };
 

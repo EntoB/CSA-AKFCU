@@ -19,6 +19,24 @@ const RecommendationsPage = () => {
     const [filters, setFilters] = useState({});
     const [loading, setLoading] = useState(false);
 
+    // Function to format date as DD/MM/YYYY
+    const formatDate = (dateString) => {
+        if (!dateString) return <i>Unknown</i>;
+
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return <i>Unknown</i>;
+
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+
+            return `${day}/${month}/${year}`;
+        } catch (e) {
+            return <i>Unknown</i>;
+        }
+    };
+
     // Accept filters as second argument
     const handleSelect = useCallback((feedbacks, filters) => {
         setFilteredFeedbacks(feedbacks);
@@ -33,7 +51,6 @@ const RecommendationsPage = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     summaries: filteredFeedbacks.map(fb => fb.summarized).filter(Boolean),
-                    // admin_needs: "general recommendations" // Not needed as per your request
                 })
             });
             const data = await res.json();
@@ -45,7 +62,6 @@ const RecommendationsPage = () => {
         }
     };
 
-    // Save recommendations and filters
     const handleSaveRecommendations = async () => {
         try {
             const res = await fetch("http://127.0.0.1:8000/insights/save-recommendations/", {
@@ -67,7 +83,7 @@ const RecommendationsPage = () => {
         <Box sx={{ p: 4 }}>
             <FilterFeedbacks onSelect={handleSelect} />
 
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontFamily: 'Poppins' }}>
                 Summarized Feedbacks & Service
             </Typography>
 
@@ -76,37 +92,128 @@ const RecommendationsPage = () => {
                     <CircularProgress />
                 </Box>
             ) : (
-                <Paper sx={{ width: '100%', overflow: 'hidden', mt: 2 }}>
-                    <TableContainer>
-                        <Table>
+                <Paper sx={{
+                    width: '100%',
+                    overflow: 'hidden',
+                    boxShadow: 3,
+                    borderRadius: 2,
+                    bgcolor: '#e6f4ea',
+                }}>
+                    <TableContainer sx={{ maxHeight: 600 }}>
+                        <Table stickyHeader aria-label="recommendations table" sx={{ minWidth: 1000 }}>
                             <TableHead>
-                                <TableRow>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Service Name</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Category</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Cooperative</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Customer</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Sentiment</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Summarized Feedback</TableCell>
+                                <TableRow sx={{ bgcolor: '#16a34a' }}>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '15%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Service Name</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '12%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Category</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '15%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Cooperative</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '15%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Farmers</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '10%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Date</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '10%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Sentiment</TableCell>
+                                    <TableCell sx={{
+                                        fontWeight: 'bold',
+                                        width: '23%',
+                                        background: '#16a34a',
+                                        color: '#fff',
+                                        fontFamily: 'Poppins',
+                                        fontSize: '1rem'
+                                    }}>Summarized Feedback</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {filteredFeedbacks.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} align="center">
+                                        <TableCell colSpan={7} align="center" sx={{ fontFamily: 'Poppins', fontSize: '1rem' }}>
                                             No feedbacks found for the selected filters.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredFeedbacks.map((row, idx) => (
-                                        <TableRow key={idx}>
-                                            <TableCell>{row.service_name || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.category || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.cooperative || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.customer || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.created_at || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.sentiment || <i>Unknown</i>}</TableCell>
-                                            <TableCell>{row.summarized || <i>No summary</i>}</TableCell>
+                                        <TableRow key={idx}
+                                            sx={{
+                                                bgcolor: row.sentiment === 'positive'
+                                                    ? '#f7fbe7'
+                                                    : row.sentiment === 'negative'
+                                                        ? '#fbeee7'
+                                                        : '#fff',
+                                                '&:hover': {
+                                                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                                                }
+                                            }}
+                                        >
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem',
+                                                wordBreak: 'break-word'
+                                            }}>{row.service_name || <i>Unknown</i>}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem'
+                                            }}>{row.category || <i>Unknown</i>}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem',
+                                                wordBreak: 'break-word'
+                                            }}>{row.cooperative || <i>Unknown</i>}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem',
+                                                wordBreak: 'break-word'
+                                            }}>{row.customer || <i>Unknown</i>}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem'
+                                            }}>{formatDate(row.created_at)}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem'
+                                            }}>{row.sentiment || <i>Unknown</i>}</TableCell>
+                                            <TableCell sx={{
+                                                fontFamily: 'Poppins',
+                                                fontSize: '0.95rem',
+                                                wordBreak: 'break-word'
+                                            }}>{row.summarized || <i>No summary</i>}</TableCell>
                                         </TableRow>
                                     ))
                                 )}
@@ -121,34 +228,74 @@ const RecommendationsPage = () => {
                     variant="contained"
                     color="primary"
                     onClick={handleGenerateRecommendations}
-                    disabled={recLoading}
+                    disabled={recLoading || filteredFeedbacks.length === 0}
+                    sx={{
+                        minWidth: 240,
+                        minHeight: 48,
+                        fontFamily: 'Poppins',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        borderRadius: 2,
+                        boxShadow: 2,
+                        '&:hover': {
+                            boxShadow: 4
+                        }
+                    }}
                 >
-                    {recLoading ? "Generating..." : "Generate Recommendations"}
+                    {recLoading ? (
+                        <CircularProgress size={24} sx={{ color: '#fff' }} />
+                    ) : (
+                        "Generate Recommendations"
+                    )}
                 </Button>
             </Box>
 
             {((Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0) || recommendations.message) && (
-                <Box sx={{ mt: 4 }}>
-                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                <Box sx={{
+                    mt: 4,
+                    p: 3,
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: 2,
+                    boxShadow: 1
+                }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontFamily: 'Poppins' }}>
                         Recommendations
                     </Typography>
                     {recommendations.message && (
-                        <Typography color="error" sx={{ mb: 2 }}>
+                        <Typography color="error" sx={{ mb: 2, fontFamily: 'Poppins' }}>
                             {recommendations.message}
                         </Typography>
                     )}
                     {Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0 && (
-                        <ul style={{ paddingLeft: 24 }}>
+                        <Box component="ul" sx={{
+                            pl: 3,
+                            mb: 2,
+                            '& li': {
+                                fontFamily: 'Poppins',
+                                fontSize: '1rem',
+                                mb: 1,
+                                lineHeight: 1.6
+                            }
+                        }}>
                             {recommendations.recommendations.map((rec, idx) => (
                                 <li key={idx}>{rec}</li>
                             ))}
-                        </ul>
+                        </Box>
                     )}
                     {Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0 && (
                         <Button
-                            variant="outlined"
+                            variant="contained"
                             color="secondary"
-                            sx={{ mt: 2 }}
+                            sx={{
+                                mt: 2,
+                                fontFamily: 'Poppins',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                borderRadius: 2,
+                                px: 3,
+                                py: 1
+                            }}
                             onClick={handleSaveRecommendations}
                         >
                             Save Recommendations & Filters

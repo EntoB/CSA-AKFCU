@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../../contexts/LanguageContext";
-import LanguageSelector from "../../components/common/LanguageSelector";
+import { motion } from "framer-motion";
 
 const FarmerHome = () => {
     const [farmer, setFarmer] = useState(null);
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const { translate } = useLanguage(); // Using the custom hook
+    const { translate } = useLanguage();
 
     useEffect(() => {
         const fetchFarmerAndServices = async () => {
@@ -20,7 +20,6 @@ const FarmerHome = () => {
                 ]);
 
                 setFarmer(farmerRes.data);
-
                 const activeServiceIds = farmerRes.data.active_services || [];
                 const activeServices = servicesRes.data.filter((service) =>
                     activeServiceIds.includes(service.id)
@@ -42,20 +41,56 @@ const FarmerHome = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"
+                ></motion.div>
             </div>
         );
     }
 
-    return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-            <LanguageSelector />
+    // Animation variants
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
 
+    const item = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    };
+
+    const cardHover = {
+        scale: 1.02,
+        boxShadow:
+            "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    };
+
+    const cardTap = {
+        scale: 0.98,
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Welcome Header */}
-                <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100"
+                >
                     <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center overflow-hidden border-4 border-white shadow-md"
+                        >
                             {farmer?.profile_picture ? (
                                 <img
                                     src={farmer.profile_picture}
@@ -67,7 +102,7 @@ const FarmerHome = () => {
                                     {farmer?.first_name?.charAt(0) || "F"}
                                 </span>
                             )}
-                        </div>
+                        </motion.div>
                         <div className="text-center sm:text-left">
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
                                 {translate("common.welcome")},{" "}
@@ -88,13 +123,16 @@ const FarmerHome = () => {
                                         clipRule="evenodd"
                                     />
                                 </svg>
-                                {translate("common.memberOf")}{" "}
+                                {translate("common.Phone_Number")}{" "}
                                 <span className="font-semibold ml-1 text-gray-700">
-                                    {farmer?.cooperative || translate("common.memberOf")}
+                                    {farmer?.username || translate("common.memberOf")}
                                 </span>
                             </p>
                             <div className="mt-4 flex flex-wrap justify-center sm:justify-start gap-2">
-                                <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium flex items-center">
+                                <motion.span
+                                    whileHover={{ scale: 1.05 }}
+                                    className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium flex items-center"
+                                >
                                     <svg
                                         className="w-4 h-4 mr-1"
                                         fill="currentColor"
@@ -108,8 +146,11 @@ const FarmerHome = () => {
                                         />
                                     </svg>
                                     {translate("common.joined")} {new Date().getFullYear()}
-                                </span>
-                                <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium flex items-center">
+                                </motion.span>
+                                <motion.span
+                                    whileHover={{ scale: 1.05 }}
+                                    className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium flex items-center"
+                                >
                                     <svg
                                         className="w-4 h-4 mr-1"
                                         fill="currentColor"
@@ -124,14 +165,19 @@ const FarmerHome = () => {
                                         <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
                                     </svg>
                                     {services.length} {translate("common.activeServices")}
-                                </span>
+                                </motion.span>
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Services Section */}
-                <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white rounded-xl shadow-lg p-6 sm:p-8 border border-gray-100"
+                >
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
                             {translate("farmer.yourActiveServices")}
@@ -139,10 +185,26 @@ const FarmerHome = () => {
                     </div>
 
                     {services.length === 0 ? (
-                        <div className="text-center py-12">
-                            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="text-center py-12"
+                        >
+                            <motion.div
+                                animate={{
+                                    rotate: [0, 10, -10, 0],
+                                    scale: [1, 1.1, 1],
+                                }}
+                                transition={{
+                                    duration: 1,
+                                    repeat: Infinity,
+                                    repeatDelay: 3,
+                                }}
+                                className="mx-auto w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-4"
+                            >
                                 <svg
-                                    className="w-12 h-12 text-gray-400"
+                                    className="w-12 h-12 text-blue-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -155,28 +217,54 @@ const FarmerHome = () => {
                                         d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                 </svg>
-                            </div>
+                            </motion.div>
                             <h3 className="text-xl font-medium text-gray-700 mb-2">
                                 {translate("farmer.noServicesFound")}
                             </h3>
                             <p className="text-gray-500 max-w-md mx-auto mb-6">
                                 {translate("farmer.noServicesDescription")}
                             </p>
-                            <button className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <motion.button
+                                whileHover={{
+                                    scale: 1.05,
+                                    boxShadow: "0 5px 15px rgba(37, 99, 235, 0.3)",
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-md"
+                            >
                                 {translate("farmer.exploreServices")}
-                            </button>
-                        </div>
+                            </motion.button>
+                        </motion.div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <motion.div
+                            variants={container}
+                            initial="hidden"
+                            animate="show"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        >
                             {services.map((service) => (
-                                <div
+                                <motion.div
                                     key={service.id}
-                                    className="bg-white border border-gray-100 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden group"
+                                    variants={item}
+                                    whileHover={cardHover}
+                                    whileTap={cardTap}
+                                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden group relative border border-gray-200"
                                     onClick={() => handleCardClick(service)}
                                 >
-                                    <div className="p-5">
+                                    {/* Animated blue side border */}
+                                    <motion.div
+                                        initial={{ scaleY: 0 }}
+                                        animate={{ scaleY: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="absolute left-0 top-0 h-full w-2 bg-blue-500 origin-bottom"
+                                    />
+
+                                    <div className="p-5 pl-7">
                                         <div className="flex items-center mb-4">
-                                            <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mr-4 text-green-600">
+                                            <motion.div
+                                                whileHover={{ rotate: 15 }}
+                                                className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center mr-4 text-blue-600"
+                                            >
                                                 <svg
                                                     className="w-6 h-6"
                                                     fill="none"
@@ -191,8 +279,8 @@ const FarmerHome = () => {
                                                         d="M13 10V3L4 14h7v7l9-11h-7z"
                                                     />
                                                 </svg>
-                                            </div>
-                                            <h3 className="text-lg font-bold text-gray-800 group-hover:text-green-600 transition-colors">
+                                            </motion.div>
+                                            <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
                                                 {service.name}
                                             </h3>
                                         </div>
@@ -202,17 +290,26 @@ const FarmerHome = () => {
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {service.category && (
-                                                <span className="px-2.5 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium">
+                                                <motion.span
+                                                    whileHover={{ scale: 1.05 }}
+                                                    className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium"
+                                                >
                                                     {service.category}
-                                                </span>
+                                                </motion.span>
                                             )}
-                                            <span className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
+                                            <motion.span
+                                                whileHover={{ scale: 1.05 }}
+                                                className="px-2.5 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium"
+                                            >
                                                 {translate("common.active")}
-                                            </span>
+                                            </motion.span>
                                         </div>
                                     </div>
-                                    <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 text-right">
-                                        <span className="text-sm text-green-600 font-medium inline-flex items-center">
+                                    <div className="px-5 py-3 bg-gray-50 border-t border-gray-200 text-right group-hover:bg-gray-100 transition-colors">
+                                        <motion.span
+                                            whileHover={{ x: 5 }}
+                                            className="text-sm text-blue-600 font-medium inline-flex items-center"
+                                        >
                                             {translate("common.provideFeedback")}
                                             <svg
                                                 className="w-4 h-4 ml-1"
@@ -228,39 +325,59 @@ const FarmerHome = () => {
                                                     d="M9 5l7 7-7 7"
                                                 />
                                             </svg>
-                                        </span>
+                                        </motion.span>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
                     )}
-                </div>
+                </motion.div>
 
                 {/* Announcement Section */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                    <div className="bg-green-600 px-6 py-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100"
+                >
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4">
                         <h3 className="text-lg font-bold text-white flex items-center">
-                            <svg
-                                className="w-5 h-5 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
+                            <motion.div
+                                animate={{
+                                    scale: [1, 1.1, 1],
+                                    rotate: [0, 5, -5, 0],
+                                }}
+                                transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    repeatDelay: 3,
+                                }}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-                                />
-                            </svg>
+                                <svg
+                                    className="w-5 h-5 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                                    />
+                                </svg>
+                            </motion.div>
                             {translate("farmer.cooperativeAnnouncement")}
                         </h3>
                     </div>
                     <div className="p-6">
                         <div className="flex items-start">
-                            <div className="flex-shrink-0 pt-1">
-                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                            <motion.div
+                                whileHover={{ rotate: 10 }}
+                                className="flex-shrink-0 pt-1"
+                            >
+                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                                     <svg
                                         className="w-6 h-6"
                                         fill="none"
@@ -276,14 +393,14 @@ const FarmerHome = () => {
                                         />
                                     </svg>
                                 </div>
-                            </div>
+                            </motion.div>
                             <div className="ml-4">
                                 <h4 className="text-lg font-semibold text-gray-800 mb-2">
                                     {translate("farmer.upcomingMeeting")}
                                 </h4>
                                 <p className="text-gray-700 mb-3">
                                     {translate("farmer.meetingDetails")}{" "}
-                                    <span className="font-medium">
+                                    <span className="font-medium text-blue-600">
                                         {new Date().toLocaleDateString("en-US", {
                                             weekday: "long",
                                             month: "long",
@@ -293,14 +410,18 @@ const FarmerHome = () => {
                                     </span>{" "}
                                     {translate("farmer.meetingLocation")}
                                 </p>
-                                <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded-r">
+                                <motion.div
+                                    whileHover={{ x: 5 }}
+                                    className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r"
+                                >
                                     <p className="text-sm text-gray-700">
-                                        <span className="font-medium text-green-700">
-                                            {farmer?.cooperative || translate("common.cooperative")}
+                                        <span className="font-medium text-blue-700">
+                                            {farmer?.cooperative ||
+                                                translate("cooperative.cooperative")}
                                         </span>{" "}
                                         {translate("farmer.leadershipDiscussion")}
                                     </p>
-                                </div>
+                                </motion.div>
                                 <div className="mt-4 flex items-center text-sm text-gray-500">
                                     <svg
                                         className="w-4 h-4 mr-1"
@@ -325,11 +446,10 @@ const FarmerHome = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
 };
 
 export default FarmerHome;
-

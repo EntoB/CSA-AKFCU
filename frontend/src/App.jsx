@@ -32,7 +32,8 @@ import EditPCPage from "./pages/Admin/PC/EditPCPage";
 import ViewPCPage from "./pages/Admin/PC/ViewPCPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import CoopLayout from "./components/cooperative/CoopLayout";
-import LoginForm from "./components/auth/LoginForm";
+import AdminCoopLoginForm from "./components/auth/AdminCoopLoginForm";
+import FarmerLoginForm from "./components/auth/FarmerLoginForm";
 import ResetPassword from "./components/auth/ResetPassword";
 
 function AppRoutes() {
@@ -45,8 +46,8 @@ function AppRoutes() {
         <Route path="contact" element={<Contact />} />
         <Route path="cooperative-signup" element={<CooperativeSignUpForm />} />
         <Route path="farmer-signup" element={<FarmerSignUpForm />} />
-        <Route path="login" element={<LoginForm />} />
-        <Route path="forgot-password" element={<ResetPassword />} />"
+        <Route path="AdminCoop-Login" element={<AdminCoopLoginForm />} />
+        <Route path="Farmer-Login" element={<FarmerLoginForm />} />        <Route path="forgot-password" element={<ResetPassword />} />"
       </Route>
 
       {/* Farmer Routes */}

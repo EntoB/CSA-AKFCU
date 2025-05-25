@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import Logout from "../auth/Logout";
 import {
     FaTachometerAlt,
@@ -57,9 +58,9 @@ const adminSections = [
         title: "Cooperatives",
         icon: <FaProjectDiagram />,
         links: [
-            { to: "/admin/pc/add", icon: <FaPlus />, label: "Add PC" },
-            { to: "/admin/pc/edit", icon: <FaPen />, label: "Edit PC" },
-            { to: "/admin/pc/view", icon: <FaEye />, label: "View PC" },
+            { to: "/admin/pc/add", icon: <FaPlus />, label: "Add Cooperative" },
+            { to: "/admin/pc/edit", icon: <FaPen />, label: "Edit Cooperative" },
+            { to: "/admin/pc/view", icon: <FaEye />, label: "View Cooperatives" },
         ],
     },
 ];
@@ -114,6 +115,7 @@ const coopSections = [
 
 const Sidebar = () => {
     const { user } = useAuth();
+    const { translate } = useLanguage();
     const [expanded, setExpanded] = useState(false);
     const [openSections, setOpenSections] = useState({});
     const location = useLocation();
@@ -142,52 +144,89 @@ const Sidebar = () => {
         }));
     };
 
+    const translateSectionTitle = (title) => {
+        const translations = {
+            Dashboard: translate("sidebar.dashboard"),
+            Insights: translate("sidebar.insights"),
+            Services: translate("sidebar.services"),
+            Cooperatives: translate("sidebar.cooperatives"),
+            Farmers: translate("sidebar.farmers"),
+            Communications: translate("sidebar.communications"),
+            Visuals: translate("sidebar.visuals"),
+            Recommendations: translate("sidebar.recommendations"),
+            Reports: translate("sidebar.reports"),
+            "Add Service": translate("sidebar.addService"),
+            "View Services": translate("sidebar.viewServices"),
+            "Enable Services": translate("sidebar.enableServices"),
+            "Add Cooperative": translate("sidebar.addCooperative"),
+            "Edit Cooperative": translate("sidebar.editCooperative"),
+            "View Cooperatives": translate("sidebar.viewCooperatives"),
+            "Add Farmer": translate("sidebar.addFarmer"),
+            "View Farmers": translate("sidebar.viewFarmers"),
+            Announcements: translate("sidebar.announcements"),
+        };
+        return translations[title] || title;
+    };
+
+    const panelTitle =
+        user.role === "admin"
+            ? translate("sidebar.adminPanel")
+            : translate("sidebar.coopPanel");
+
     return (
         <motion.aside
-            className={`fixed top-0 left-0 h-screen z-20 flex flex-col bg-green-900 opacity-85 text-white shadow-lg transition-all duration-300
-                ${expanded ? "w-64" : "w-[48px]"} group`}
+            className="fixed top-0 left-0 h-screen z-20 flex flex-col bg-green-900 opacity-85 text-white shadow-lg"
+            initial={{ width: 48 }}
+            animate={{
+                width: expanded ? 256 : 48,
+                transition: { type: "spring", damping: 20, stiffness: 300 },
+            }}
             onMouseEnter={() => setExpanded(true)}
             onMouseLeave={() => setExpanded(false)}
-            style={{ minWidth: expanded ? 200 : 48 }}
         >
-            <div className="flex flex-col flex-1 p-2">
-                <h2
-                    className={`text-xl font-bold mb-6 mt-4 text-center transition-all duration-200 ${expanded ? "opacity-100" : "opacity-0 w-0 h-0 overflow-hidden"}`}
+            <div className="flex flex-col flex-1 p-2 overflow-hidden">
+                <motion.h2
+                    className="text-xl font-bold mb-6 mt-4 text-center whitespace-nowrap"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{
+                        opacity: expanded ? 1 : 0,
+                        height: expanded ? "auto" : 0,
+                        marginBottom: expanded ? "1.5rem" : 0,
+                        marginTop: expanded ? "1rem" : 0,
+                    }}
+                    transition={{ duration: 0.2 }}
                 >
-                    {user.role === "admin" ? "Admin Panel" : "Coop Panel"}
-                </h2>
+                    {panelTitle}
+                </motion.h2>
 
-                <nav className="flex flex-col gap-2">
+                <nav className="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
                     {sections.map((section) => (
                         <div key={section.title} className="flex flex-col">
                             {section.links.length > 1 ? (
                                 <>
                                     <motion.button
                                         onClick={() => toggleSection(section.title)}
-                                        className={`flex items-center justify-between gap-3 px-2 py-2 rounded hover:bg-green-800 transition
-                                            ${location.pathname.startsWith(
-                                            section.links[0].to
-                                                .split("/")
-                                                .slice(0, 3)
-                                                .join("/")
+                                        className={`flex items-center justify-between gap-3 px-2 py-2 rounded transition whitespace-nowrap
+                      ${location.pathname.startsWith(
+                                            section.links[0].to.split("/").slice(0, 3).join("/")
                                         )
                                                 ? "bg-green-800"
                                                 : ""
                                             }`}
-                                        whileHover={expanded ? { scale: 1.02 } : {}}
-                                        whileTap={expanded ? { scale: 0.98 } : {}}
+                                        whileHover={{ backgroundColor: "rgba(20, 83, 45, 0.8)" }}
+                                        whileTap={{ scale: 0.98 }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <span className="text-lg">{section.icon}</span>
                                             <motion.span
-                                                className="transition-all duration-200"
                                                 initial={{ opacity: 0, x: -10 }}
                                                 animate={{
                                                     opacity: expanded ? 1 : 0,
                                                     x: expanded ? 0 : -10,
                                                 }}
+                                                transition={{ duration: 0.2 }}
                                             >
-                                                {section.title}
+                                                {translateSectionTitle(section.title)}
                                             </motion.span>
                                         </div>
                                         {expanded && (
@@ -212,11 +251,19 @@ const Sidebar = () => {
                                                     visible: {
                                                         opacity: 1,
                                                         height: "auto",
-                                                        transition: { staggerChildren: 0.05 },
+                                                        transition: {
+                                                            when: "beforeChildren",
+                                                            staggerChildren: 0.05,
+                                                            duration: 0.2,
+                                                        },
                                                     },
                                                     hidden: {
                                                         opacity: 0,
                                                         height: 0,
+                                                        transition: {
+                                                            when: "afterChildren",
+                                                            duration: 0.15,
+                                                        },
                                                     },
                                                 }}
                                                 className="overflow-hidden"
@@ -232,15 +279,17 @@ const Sidebar = () => {
                                                     >
                                                         <Link
                                                             to={link.to}
-                                                            className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-green-800 transition ml-6
-                                                                ${location.pathname === link.to ? "bg-green-800" : ""}`}
+                                                            className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-green-800 transition ml-6 whitespace-nowrap
+                                ${location.pathname === link.to ? "bg-green-800" : ""}`}
                                                         >
                                                             <span className="text-lg">{link.icon}</span>
-                                                            {expanded && (
-                                                                <span className="transition-all duration-200">
-                                                                    {link.label}
-                                                                </span>
-                                                            )}
+                                                            <motion.span
+                                                                initial={{ opacity: 0 }}
+                                                                animate={{ opacity: expanded ? 1 : 0 }}
+                                                                transition={{ duration: 0.2 }}
+                                                            >
+                                                                {translateSectionTitle(link.label)}
+                                                            </motion.span>
                                                         </Link>
                                                     </motion.div>
                                                 ))}
@@ -252,15 +301,17 @@ const Sidebar = () => {
                                 <Link
                                     key={section.links[0].to}
                                     to={section.links[0].to}
-                                    className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-green-800 transition
-                                        ${location.pathname === section.links[0].to ? "bg-green-800" : ""}`}
+                                    className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-green-800 transition whitespace-nowrap
+                    ${location.pathname === section.links[0].to ? "bg-green-800" : ""}`}
                                 >
                                     <span className="text-lg">{section.icon}</span>
-                                    {expanded && (
-                                        <span className="transition-all duration-200">
-                                            {section.links[0].label}
-                                        </span>
-                                    )}
+                                    <motion.span
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: expanded ? 1 : 0 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        {translateSectionTitle(section.links[0].label)}
+                                    </motion.span>
                                 </Link>
                             )}
                         </div>
@@ -269,15 +320,18 @@ const Sidebar = () => {
             </div>
 
             <div className="mt-auto mb-4 flex items-center justify-center">
-                <div className="flex items-center w-full">
-                    <span className="text-lg ml-2">
+                <div className="flex items-center w-full px-2">
+                    <span className="text-lg">
                         <FaSignOutAlt />
                     </span>
-                    <span
-                        className={`transition-all duration-200 ${expanded ? "opacity-100 ml-2" : "opacity-0 w-0 h-0 overflow-hidden"}`}
+                    <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: expanded ? 1 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="ml-2 whitespace-nowrap"
                     >
                         <Logout />
-                    </span>
+                    </motion.span>
                 </div>
             </div>
         </motion.aside>
