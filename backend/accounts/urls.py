@@ -16,4 +16,6 @@ urlpatterns = [
     path('pcs/<int:pc_id>/toggle-active/', views.toggle_pc_active, name='toggle_pc_active'),
     path('farmers/<int:farmer_id>/toggle-active/', views.toggle_farmer_active, name='toggle_farmer_active'),
     path('users/me/', views.get_current_user, name='get_current_user'),
+    path('farmers/<int:farmer_id>/reset-password/', views.reset_password_registration_key, name='generate_reset_password_key'),
+    path('reset-password/', views.reset_password, name='reset_password'),
 ]#add view admins and view customers

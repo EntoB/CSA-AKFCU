@@ -45,6 +45,70 @@ def generate_registration_key(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import RegistrationKey
+from accounts.helpers.utils import generate_random_key
+
+
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+
+@csrf_exempt
+def reset_password(request):
+    """
+    Expects POST with:
+    {
+        "key": "<reset_key>",
+        "password": "<new_password>"
+    }
+    Uses RegistrationKey with for_role='reset_password' and updates the password of the user whose id is in number_of_farmers.
+    """
+    if request.method == "POST":
+        data, error = parse_json_request(request)
+        if error:
+            return error
+
+        key = data.get("key")
+        new_password = data.get("password")
+
+        if not key or not new_password:
+            return JsonResponse({"error": "Key and new password are required."}, status=400)
+
+        try:
+            reg_key = RegistrationKey.objects.get(key=key, for_role="reset_password")
+        except RegistrationKey.DoesNotExist:
+            return JsonResponse({"error": "Invalid or expired reset key."}, status=400)
+        user_id = reg_key.number_of_farmers
+        print(f"Reset key found: {reg_key.key}, for role: {reg_key.for_role} for user ID: {user_id}")
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found."}, status=404)
+
+        user.password = make_password(new_password)
+        user.save()
+        reg_key.delete()  # Invalidate the key after use
+
+        return JsonResponse({"message": "Password reset successful."})
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+@csrf_exempt
+def reset_password_registration_key(request, farmer_id):
+    if request.method == "POST":
+        key = generate_random_key()
+        reg_key = RegistrationKey.objects.create(
+            key=key,
+            for_role="reset_password",
+            number_of_farmers=farmer_id  # Store the farmer id here
+        )
+        return JsonResponse({
+            "key": reg_key.key,
+            "for_role": reg_key.for_role,
+            "number_of_farmers": reg_key.number_of_farmers
+        })
+    return JsonResponse({"error": "Only POST allowed"}, status=405)
+
 # User registration
 def register_user(request):
     if request.method == 'POST':

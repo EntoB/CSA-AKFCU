@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Button from '@mui/material/Button';
 import AnimatedAlert from '../../components/common/AnimatedAlert';
-
-const columns = [
-    { id: 'id', label: 'ID', minWidth: 60 },
-    { id: 'username', label: 'Name', minWidth: 120 },
-    { id: 'phone_number', label: 'Phone Number', minWidth: 120 },
-    { id: 'address', label: 'Address', minWidth: 120 },
-    { id: 'last_name', label: 'Cooperative', minWidth: 120 },
-    { id: 'status', label: 'Status', minWidth: 100 },
-];
+import ViewFarmersTable from '../../components/cooperative/ViewFarmersTable';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 const ViewFarmersPage = () => {
     const [farmers, setFarmers] = useState([]);
@@ -28,6 +17,11 @@ const ViewFarmersPage = () => {
     const [alertMessage, setAlertMessage] = useState("");
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    // For reset password dialog
+    const [resetDialogOpen, setResetDialogOpen] = useState(false);
+    const [resetKey, setResetKey] = useState("");
+    const [resetFarmer, setResetFarmer] = useState(null);
 
     useEffect(() => {
         fetchFarmers();
@@ -68,10 +62,37 @@ const ViewFarmersPage = () => {
         }
     };
 
+    const handleResetPassword = async (farmerId) => {
+        try {
+            const res = await axios.post(
+                `http://127.0.0.1:8000/accounts/farmers/${farmerId}/reset-password/`,
+                {},
+                { headers: { "Content-Type": "application/json" } }
+            );
+            setResetKey(res.data.key);
+            const farmer = farmers.find(f => f.id === farmerId);
+            setResetFarmer(farmer);
+            setResetDialogOpen(true);
+            setAlertType("success");
+            setAlertMessage("Password reset link generated.");
+            setAlertOpen(true);
+        } catch (err) {
+            setAlertType("danger");
+            setAlertMessage("Failed to Reset Password!.");
+            setAlertOpen(true);
+        }
+    };
+
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
+    };
+
+    const handleCloseResetDialog = () => {
+        setResetDialogOpen(false);
+        setResetKey("");
+        setResetFarmer(null);
     };
 
     return (
@@ -87,86 +108,41 @@ const ViewFarmersPage = () => {
             {loading ? (
                 <div>Loading...</div>
             ) : (
-                <Paper sx={{
-                    width: '100%',
-                    overflow: 'hidden',
-                    boxShadow: 3,
-                    borderRadius: 2,
-                    bgcolor: '#e6f4ea', // light green background
-                }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
-                        <Table stickyHeader aria-label="farmers table">
-                            <TableHead>
-                                <TableRow sx={{ bgcolor: '#16a34a' }}>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={column.id}
-                                            align={column.align}
-                                            style={{
-                                                minWidth: column.minWidth,
-                                                background: '#16a34a',
-                                                color: '#fff',
-                                                fontWeight: 'bold',
-                                            }}
-                                        >
-                                            {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {farmers
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((farmer) => (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={farmer.id}
-                                            sx={{
-                                                bgcolor: farmer.is_active
-                                                    ? '#f7fbe7' // light golden for active
-                                                    : '#fff',
-                                            }}
-                                        >
-                                            <TableCell>{farmer.id}</TableCell>
-                                            <TableCell>{farmer.username}</TableCell>
-                                            <TableCell>{farmer.phone_number}</TableCell>
-                                            <TableCell>{farmer.address || "—"}</TableCell>
-                                            <TableCell>{farmer.last_name || "—"}</TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    variant={farmer.is_active ? "contained" : "outlined"}
-                                                    color={farmer.is_active ? "success" : "primary"}
-                                                    size="small"
-                                                    sx={{
-                                                        fontWeight: 'bold',
-                                                        bgcolor: farmer.is_active ? '#16a34a' : undefined,
-                                                        color: farmer.is_active ? '#fff' : undefined,
-                                                        '&:hover': {
-                                                            bgcolor: farmer.is_active ? '#1e293b' : '#16a34a',
-                                                            color: '#f59e42',
-                                                        },
-                                                        borderRadius: 2,
-                                                        minWidth: 90,
-                                                    }}
-                                                    onClick={() => handleToggleActive(farmer.id, farmer.is_active)}
-                                                >
-                                                    {farmer.is_active ? "Active" : "Inactive"}
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 50]}
-                        component="div"
-                        count={farmers.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Paper>
+                <ViewFarmersTable
+                    farmers={farmers}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    handleChangePage={handleChangePage}
+                    handleChangeRowsPerPage={handleChangeRowsPerPage}
+                    handleToggleActive={handleToggleActive}
+                    handleResetPassword={handleResetPassword}
+                />
             )}
+
+            <Dialog open={resetDialogOpen} onClose={handleCloseResetDialog}>
+                <DialogTitle>Password Reset Key</DialogTitle>
+                <DialogContent>
+                    <Typography gutterBottom>
+                        {resetFarmer && (
+                            <>
+                                Farmer: <b>{resetFarmer.username}</b>
+                                <br />
+                            </>
+                        )}
+                        <span style={{ color: "#16a34a", wordBreak: "break-all" }}>
+                            Key: <b>{resetKey}</b>
+                        </span>
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                        Give this key to the farmer to reset their password.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseResetDialog} color="primary" autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

@@ -7,6 +7,12 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 const columns = [
     { id: 'id', label: 'ID', minWidth: 60 },
@@ -14,6 +20,7 @@ const columns = [
     { id: 'phone_number', label: 'Phone Number', minWidth: 120 },
     { id: 'is_active', label: 'Active', minWidth: 80 },
     { id: 'toggle', label: 'Toggle', minWidth: 100 },
+    { id: 'reset', label: 'Reset Password', minWidth: 140 },
 ];
 
 const ViewPCPage = () => {
@@ -21,8 +28,10 @@ const ViewPCPage = () => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [search, setSearch] = useState("");
+    const [resetDialogOpen, setResetDialogOpen] = useState(false);
+    const [resetKey, setResetKey] = useState("");
+    const [resetPC, setResetPC] = useState(null);
 
-    // Fetch all primary cooperatives on mount
     useEffect(() => {
         fetchPCs();
     }, []);
@@ -54,6 +63,28 @@ const ViewPCPage = () => {
         } catch {
             setMessage("Failed to update state.");
         }
+    };
+
+    const handleResetPassword = async (pcId) => {
+        try {
+            const res = await axios.post(
+                `http://127.0.0.1:8000/accounts/farmers/${pcId}/reset-password/`,
+                {},
+                { headers: { "Content-Type": "application/json" } }
+            );
+            setResetKey(res.data.key);
+            const pc = pcs.find(p => p.id === pcId);
+            setResetPC(pc);
+            setResetDialogOpen(true);
+        } catch {
+            setMessage("Failed to generate reset key.");
+        }
+    };
+
+    const handleCloseResetDialog = () => {
+        setResetDialogOpen(false);
+        setResetKey("");
+        setResetPC(null);
     };
 
     return (
@@ -149,6 +180,21 @@ const ViewPCPage = () => {
                                                 {pc.is_active ? "Deactivate" : "Activate"}
                                             </button>
                                         </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="outlined"
+                                                color="secondary"
+                                                size="small"
+                                                sx={{
+                                                    fontWeight: 'bold',
+                                                    borderRadius: 2,
+                                                    minWidth: 120,
+                                                }}
+                                                onClick={() => handleResetPassword(pc.id)}
+                                            >
+                                                Reset Password
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -156,6 +202,31 @@ const ViewPCPage = () => {
                     </TableContainer>
                 </Paper>
             )}
+
+            <Dialog open={resetDialogOpen} onClose={handleCloseResetDialog}>
+                <DialogTitle>Password Reset Key</DialogTitle>
+                <DialogContent>
+                    <Typography gutterBottom>
+                        {resetPC && (
+                            <>
+                                PC: <b>{resetPC.username}</b>
+                                <br />
+                            </>
+                        )}
+                        <span style={{ color: "#16a34a", wordBreak: "break-all" }}>
+                            Key: <b>{resetKey}</b>
+                        </span>
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                        Give this key to the PC to reset their password.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseResetDialog} color="primary" autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

@@ -33,6 +33,7 @@ import ViewPCPage from "./pages/Admin/PC/ViewPCPage";
 import AdminLayout from "./components/admin/AdminLayout";
 import CoopLayout from "./components/cooperative/CoopLayout";
 import LoginForm from "./components/auth/LoginForm";
+import ResetPassword from "./components/auth/ResetPassword";
 
 function AppRoutes() {
   return (
@@ -45,6 +46,7 @@ function AppRoutes() {
         <Route path="cooperative-signup" element={<CooperativeSignUpForm />} />
         <Route path="farmer-signup" element={<FarmerSignUpForm />} />
         <Route path="login" element={<LoginForm />} />
+        <Route path="forgot-password" element={<ResetPassword />} />"
       </Route>
 
       {/* Farmer Routes */}
