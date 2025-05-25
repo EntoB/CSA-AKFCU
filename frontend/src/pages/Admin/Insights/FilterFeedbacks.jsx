@@ -119,7 +119,7 @@ const FilterFeedbacks = ({ onSelect }) => {
     };
 
     return (
-        <div className="bg-gray-400 rounded-lg shadow-xl p-3 mb-6 mx-6 font-poppins">
+        <div className="bg-gray-400 rounded-lg shadow-xl p-2 mb-6 mx-6 font-poppins">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-800">
                     Filter Feedbacks

@@ -7,6 +7,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import { blue, green } from "@mui/material/colors";
 
 const columns = [
     { id: 'id', label: 'ID', minWidth: 60 },
@@ -59,28 +60,45 @@ const ViewServicesPage = () => {
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">All Services</h2>
             {/* Search input */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <input
-                    type="text"
-                    placeholder="Search by name or category,"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{
-                        padding: '10px 18px',
-                        borderRadius: 12,
-                        border: '1.5px solid #16a34a',
-                        fontSize: 17,
-                        minWidth: 300,
-                        outline: 'none',
-                        background: '#f7fbe7',
-                        color: '#14532d',
-                        boxShadow: '0 2px 8px 0 rgba(22,163,74,0.07)',
-                        transition: 'border 0.2s, box-shadow 0.2s',
-                    }}
-                    onFocus={e => e.target.style.border = '2px solid #22c55e'}
-                    onBlur={e => e.target.style.border = '1.5px solid #16a34a'}
-                />
-            </div>
+            <form className="flex items-center max-w-sm ml-auto mb-4" onSubmit={e => e.preventDefault()}>
+                <label htmlFor="simple-search" className="sr-only">Search</label>
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5v10M3 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0V6a3 3 0 0 0-3-3H9m1.5-2-2 2 2 2" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        id="simple-search"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                        placeholder="Search branch name..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        autoComplete="off"
+                    />
+                </div>
+                <button
+                    type="submit"
+                    className="p-2.5 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
+                    tabIndex={-1}
+                >
+                    <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                    <span className="sr-only">Search</span>
+                </button>
+                <button
+                    type="button"
+                    className="p-2.5 ml-2 text-sm font-medium text-white bg-green-800 rounded-lg border border-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 flex items-center"
+                    onClick={() => window.location.href = '/admin/services/add'}
+                >
+                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add
+                </button>
+            </form>
             {message && <div className="mb-4 text-blue-600">{message}</div>}
             {loading ? (
                 <div>Loading...</div>

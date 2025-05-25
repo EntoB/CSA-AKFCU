@@ -35,6 +35,7 @@ import CoopLayout from "./components/cooperative/CoopLayout";
 import AdminCoopLoginForm from "./components/auth/AdminCoopLoginForm";
 import FarmerLoginForm from "./components/auth/FarmerLoginForm";
 import ResetPassword from "./components/auth/ResetPassword";
+import FeedbackSettings from "./components/admin/AdminFeedbackSettings";
 
 function AppRoutes() {
   return (
@@ -101,6 +102,7 @@ function AppRoutes() {
         <Route path="pc/add" element={<AddPCPage />} />
         <Route path="pc/edit" element={<EditPCPage />} />
         <Route path="pc/view" element={<ViewPCPage />} />
+        <Route path="FeedbackSettings" element={<FeedbackSettings />} />
       </Route>
 
       {/* Catch-all route for 404 */}

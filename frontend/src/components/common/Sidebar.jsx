@@ -63,6 +63,13 @@ const adminSections = [
             { to: "/admin/pc/view", icon: <FaEye />, label: "View Cooperatives" },
         ],
     },
+    {
+        title: "Feedback Setting",
+        icon: <FaPen />,
+        links: [
+            { to: "/admin/FeedbackSettings", icon: <FaPen />, label: "Feedback Setting" },
+        ]
+    }
 ];
 
 const coopSections = [

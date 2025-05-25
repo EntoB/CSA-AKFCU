@@ -10,6 +10,14 @@ const AddServicePage = () => {
         category: "",
         newCategory: "",
     });
+    const [errors, setErrors] = useState({
+        name: "",
+        name_am: "",
+        name_or: "",
+        description: "",
+        category: "",
+        newCategory: "",
+    });
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState({ text: "", type: "" });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,18 +46,90 @@ const AddServicePage = () => {
         fetchCategories();
     }, []);
 
-    const handleChange = (e) => {
+    const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
-    };
 
-    const handleCategoryChange = (e) => {
-        const value = e.target.value;
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors((prev) => ({ ...prev, [name]: "" }));
+        }
+
+        // Special handling for category selection
+        if (name === "category") {
+            setForm((prev) => ({
+                ...prev,
+                category: value,
+                newCategory: value === "__new__" ? "" : prev.newCategory,
+            }));
+            return;
+        }
+
+        // For all other fields
         setForm((prev) => ({
             ...prev,
-            category: value,
-            newCategory: value === "__new__" ? "" : prev.newCategory,
+            [name]: value,
         }));
+    };
+
+    const validateForm = () => {
+        let isValid = true;
+        const newErrors = {
+            name: "",
+            name_am: "",
+            name_or: "",
+            description: "",
+            category: "",
+            newCategory: "",
+        };
+
+        // Validate service name (English) - required, min 3 chars
+        if (form.name.length < 3) {
+            newErrors.name = "Service name (English) must be at least 3 characters";
+            isValid = false;
+        } else if (!form.name.trim()) {
+            newErrors.name = "Service name (English) is required";
+            isValid = false;
+        }
+
+        // Validate service name (Amharic) - required, min 3 chars
+        if (form.name_am.length < 3) {
+            newErrors.name_am =
+                "Service name (Amharic) must be at least 3 characters";
+            isValid = false;
+        } else if (!form.name_am.trim()) {
+            newErrors.name_am = "Service name (Amharic) is required";
+            isValid = false;
+        }
+
+        // Validate service name (Oromic) - required, min 3 chars
+        if (form.name_or.length < 3) {
+            newErrors.name_or = "Service name (Oromic) must be at least 3 characters";
+            isValid = false;
+        } else if (!form.name_or.trim()) {
+            newErrors.name_or = "Service name (Oromic) is required";
+            isValid = false;
+        }
+
+        // Validate description - required, min 5 chars
+        if (form.description.length < 5) {
+            newErrors.description = "Description must be at least 5 characters";
+            isValid = false;
+        } else if (!form.description.trim()) {
+            newErrors.description = "Description is required";
+            isValid = false;
+        }
+
+        // Validate category
+        if (!form.category) {
+            newErrors.category = "Category is required";
+            isValid = false;
+        } else if (form.category === "__new__" && !form.newCategory.trim()) {
+            newErrors.newCategory = "New category name is required";
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
     };
 
     const handleSubmit = async (e) => {
@@ -57,17 +137,14 @@ const AddServicePage = () => {
         setIsSubmitting(true);
         setMessage({ text: "", type: "" });
 
-        const finalCategory =
-            form.category === "__new__" ? form.newCategory : form.category;
-
-        if (!form.name || !finalCategory) {
-            setMessage({
-                text: "Service name and category are required",
-                type: "error",
-            });
+        // Validate form before submission
+        if (!validateForm()) {
             setIsSubmitting(false);
             return;
         }
+
+        const finalCategory =
+            form.category === "__new__" ? form.newCategory : form.category;
 
         try {
             const response = await axios.post(
@@ -128,15 +205,15 @@ const AddServicePage = () => {
                             Add New Service
                         </h1>
                         <p className="mt-2 text-sm text-gray-600">
-                            Fill in the details to register a new service
+                            All fields are required
                         </p>
                     </div>
 
                     {message.text && (
                         <div
                             className={`mb-6 p-4 rounded-md ${message.type === "success"
-                                ? "bg-green-50 text-green-800"
-                                : "bg-red-50 text-red-800"
+                                    ? "bg-green-50 text-green-800"
+                                    : "bg-red-50 text-red-800"
                                 }`}
                         >
                             {message.text}
@@ -144,6 +221,7 @@ const AddServicePage = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* English Name */}
                         <div>
                             <label
                                 htmlFor="name"
@@ -156,63 +234,88 @@ const AddServicePage = () => {
                                 id="name"
                                 name="name"
                                 value={form.name}
-                                onChange={handleChange}
-                                required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                onChange={handleInputChange}
+                                minLength={3}
+                                className={`mt-1 block w-full px-3 py-2 border ${errors.name ? "border-red-500" : "border-gray-300"
+                                    } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                             />
+                            {errors.name && (
+                                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                            )}
                         </div>
 
+                        {/* Amharic Name */}
                         <div>
                             <label
                                 htmlFor="name_am"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Service Name (Amharic)
+                                Service Name (Amharic) *
                             </label>
                             <input
                                 type="text"
                                 id="name_am"
                                 name="name_am"
                                 value={form.name_am}
-                                onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                onChange={handleInputChange}
+                                minLength={3}
+                                className={`mt-1 block w-full px-3 py-2 border ${errors.name_am ? "border-red-500" : "border-gray-300"
+                                    } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                             />
+                            {errors.name_am && (
+                                <p className="mt-1 text-sm text-red-600">{errors.name_am}</p>
+                            )}
                         </div>
 
+                        {/* Oromic Name */}
                         <div>
                             <label
                                 htmlFor="name_or"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Service Name (Oromic)
+                                Service Name (Oromic) *
                             </label>
                             <input
                                 type="text"
                                 id="name_or"
                                 name="name_or"
                                 value={form.name_or}
-                                onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                onChange={handleInputChange}
+                                minLength={3}
+                                className={`mt-1 block w-full px-3 py-2 border ${errors.name_or ? "border-red-500" : "border-gray-300"
+                                    } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                             />
+                            {errors.name_or && (
+                                <p className="mt-1 text-sm text-red-600">{errors.name_or}</p>
+                            )}
                         </div>
 
+                        {/* Description */}
                         <div>
                             <label
                                 htmlFor="description"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Description
+                                Description *
                             </label>
                             <textarea
                                 id="description"
                                 name="description"
                                 rows={3}
                                 value={form.description}
-                                onChange={handleChange}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                onChange={handleInputChange}
+                                minLength={5}
+                                className={`mt-1 block w-full px-3 py-2 border ${errors.description ? "border-red-500" : "border-gray-300"
+                                    } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                             />
+                            {errors.description && (
+                                <p className="mt-1 text-sm text-red-600">
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
 
+                        {/* Category */}
                         <div>
                             <label
                                 htmlFor="category"
@@ -230,9 +333,9 @@ const AddServicePage = () => {
                                         id="category"
                                         name="category"
                                         value={form.category}
-                                        onChange={handleCategoryChange}
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                        required
+                                        onChange={handleInputChange}
+                                        className={`mt-1 block w-full px-3 py-2 border ${errors.category ? "border-red-500" : "border-gray-300"
+                                            } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                                     >
                                         <option value="">Select a category</option>
                                         {categories.map((cat) => (
@@ -242,6 +345,11 @@ const AddServicePage = () => {
                                         ))}
                                         <option value="__new__">+ Create new category</option>
                                     </select>
+                                    {errors.category && !form.category && (
+                                        <p className="mt-1 text-sm text-red-600">
+                                            {errors.category}
+                                        </p>
+                                    )}
 
                                     {form.category === "__new__" && (
                                         <div className="mt-2">
@@ -256,10 +364,17 @@ const AddServicePage = () => {
                                                 id="newCategory"
                                                 name="newCategory"
                                                 value={form.newCategory}
-                                                onChange={handleChange}
-                                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                                required
+                                                onChange={handleInputChange}
+                                                className={`mt-1 block w-full px-3 py-2 border ${errors.newCategory
+                                                        ? "border-red-500"
+                                                        : "border-gray-300"
+                                                    } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                                             />
+                                            {errors.newCategory && (
+                                                <p className="mt-1 text-sm text-red-600">
+                                                    {errors.newCategory}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </>
@@ -271,8 +386,8 @@ const AddServicePage = () => {
                                 type="submit"
                                 disabled={isSubmitting || isLoading}
                                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${isSubmitting || isLoading
-                                    ? "opacity-70 cursor-not-allowed"
-                                    : ""
+                                        ? "opacity-70 cursor-not-allowed"
+                                        : ""
                                     }`}
                             >
                                 {isSubmitting ? (
