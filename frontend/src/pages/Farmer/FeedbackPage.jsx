@@ -4,10 +4,12 @@ import axios from "axios";
 import FeedbackResponse from "../../components/farmer/FeedbackResponse";
 import { FaStar, FaLeaf, FaChevronLeft } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const FeedbackPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { translate } = useLanguage();
     const service = location.state?.service;
     const [message, setMessage] = useState("");
     const [rating, setRating] = useState(5);
@@ -30,11 +32,11 @@ const FeedbackPage = () => {
                 setReason(res.data.reason || "");
             } catch {
                 setAllowed(false);
-                setReason("Could not verify feedback eligibility.");
+                setReason(translate("feedback.couldNotVerify"));
             }
         };
         checkAllowed();
-    }, [service]);
+    }, [service, translate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,13 +49,13 @@ const FeedbackPage = () => {
                 rating,
                 specific_service: specificService,
             });
-            setStatus("Feedback submitted successfully!");
+            setStatus(translate("feedback.submitSuccess"));
             setMessage("");
             setRating(5);
             setSpecificService("");
             setTimeout(() => setShowResponse(true), 1000);
         } catch (err) {
-            setStatus("Failed to submit feedback.");
+            setStatus(translate("feedback.submitFailed"));
         } finally {
             setIsAnalyzing(false);
         }
@@ -65,16 +67,16 @@ const FeedbackPage = () => {
                 <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
                     <FaLeaf className="text-5xl text-green-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                        No Service Selected
+                        {translate("feedback.noServiceSelected")}
                     </h2>
                     <p className="text-gray-600 mb-6">
-                        Please go back and select a service to provide feedback.
+                        {translate("feedback.noServiceDescription")}
                     </p>
                     <button
                         onClick={() => navigate(-1)}
                         className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-md mx-auto"
                     >
-                        <FaChevronLeft /> Go Back
+                        <FaChevronLeft /> {translate("common.goBack")}
                     </button>
                 </div>
             </div>
@@ -104,7 +106,7 @@ const FeedbackPage = () => {
                         </div>
                     </div>
                     <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-                        Feedback for {service.name}
+                        {translate("feedback.feedbackFor")} {service.name}
                     </h2>
                     <div className="text-center bg-red-50 text-red-600 p-4 rounded-lg mb-6">
                         {reason}
@@ -113,7 +115,7 @@ const FeedbackPage = () => {
                         onClick={() => navigate(-1)}
                         className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-md"
                     >
-                        Return to Services
+                        {translate("feedback.returnToServices")}
                     </button>
                 </div>
             </div>
@@ -126,7 +128,7 @@ const FeedbackPage = () => {
                 <div className="text-center">
                     <div className="loader mx-auto mb-4"></div>
                     <p className="text-gray-700 font-medium">
-                        Checking feedback eligibility...
+                        {translate("feedback.checkingEligibility")}
                     </p>
                 </div>
             </div>
@@ -145,13 +147,13 @@ const FeedbackPage = () => {
                     onClick={() => navigate(-1)}
                     className="flex items-center gap-2 text-green-600 hover:text-green-800 mb-6 transition-colors duration-200"
                 >
-                    <FaChevronLeft /> Back to Services
+                    <FaChevronLeft /> {translate("common.backToServices")}
                 </button>
 
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     <div className="bg-gradient-to-r from-green-400 to-green-600 p-6 text-white">
                         <h2 className="text-3xl font-bold mb-2">
-                            Feedback for {service.name}
+                            {translate("feedback.feedbackFor")} {service.name}
                         </h2>
                         <p className="opacity-90">{service.description}</p>
                     </div>
@@ -164,13 +166,13 @@ const FeedbackPage = () => {
                             className="mb-6"
                         >
                             <label className="block text-lg font-semibold text-gray-700 mb-3">
-                                Specific Service
+                                {translate("feedback.specificService")}
                             </label>
                             <input
                                 className="w-full border-2 border-gray-200 rounded-xl p-3 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
                                 value={specificService}
                                 onChange={(e) => setSpecificService(e.target.value)}
-                                placeholder="e.g., Organic Tomato Seeds, Jersey Cow Milking"
+                                placeholder={translate("feedback.specificServicePlaceholder")}
                                 required
                             />
                         </motion.div>
@@ -182,7 +184,7 @@ const FeedbackPage = () => {
                             className="mb-6"
                         >
                             <label className="block text-lg font-semibold text-gray-700 mb-3">
-                                Your Rating
+                                {translate("feedback.yourRating")}
                             </label>
                             <div className="flex items-center">
                                 {[...Array(5)].map((star, i) => {
@@ -210,7 +212,7 @@ const FeedbackPage = () => {
                                     );
                                 })}
                                 <span className="ml-3 text-xl font-medium text-gray-600">
-                                    {rating} star{rating !== 1 ? "s" : ""}
+                                    {rating} {translate("feedback.stars", { count: rating })}
                                 </span>
                             </div>
                         </motion.div>
@@ -222,14 +224,14 @@ const FeedbackPage = () => {
                             className="mb-8"
                         >
                             <label className="block text-lg font-semibold text-gray-700 mb-3">
-                                Your Feedback
+                                {translate("feedback.yourFeedback")}
                             </label>
                             <textarea
                                 className="w-full border-2 border-gray-200 rounded-xl p-4 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
                                 rows={5}
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Share your detailed experience with this service..."
+                                placeholder={translate("feedback.feedbackPlaceholder")}
                                 required
                             />
                         </motion.div>
@@ -250,12 +252,12 @@ const FeedbackPage = () => {
                                 {isAnalyzing ? (
                                     <>
                                         <div className="loader-small"></div>
-                                        Processing...
+                                        {translate("feedback.processing")}
                                     </>
                                 ) : (
                                     <>
                                         <FaLeaf className="text-xl" />
-                                        Submit Feedback
+                                        {translate("feedback.submitButton")}
                                     </>
                                 )}
                             </button>
@@ -290,17 +292,17 @@ const FeedbackPage = () => {
                 message={
                     <div className="text-center p-6">
                         <h3 className="text-2xl font-bold text-green-600 mb-2">
-                            Thank You!
+                            {translate("feedback.thankYouMessage")}
                         </h3>
                         <p className="text-lg text-gray-700 mb-4">
-                            Your feedback has been submitted successfully.
+                            {translate("feedback.feedbackSubmitted")}
                         </p>
                         <div className="bg-green-50 rounded-xl p-4 border border-green-100">
                             <p className="text-gray-600 font-medium">
-                                Your feedback is being analyzed
+                                {translate("feedback.feedbackAnalyzing")}
                             </p>
                             <p className="text-sm text-gray-500 mt-1">
-                                We'll use your input to improve our services
+                                {translate("feedback.feedbackImprovement")}
                             </p>
                         </div>
                     </div>

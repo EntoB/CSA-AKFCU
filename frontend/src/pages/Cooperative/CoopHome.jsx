@@ -11,7 +11,7 @@ const CoopHome = () => {
     const [services, setServices] = useState([]);
     const [farmers, setFarmers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { translate } = useLanguage();
+    const { translate, language } = useLanguage();
 
     useEffect(() => {
         const fetchCooperativeData = async () => {
@@ -38,6 +38,25 @@ const CoopHome = () => {
         };
         fetchCooperativeData();
     }, []);
+
+    // Function to get translated service name
+    const getTranslatedServiceName = (service) => {
+        switch (language) {
+            case "am":
+                return service.name_am || service.name;
+            case "or":
+                return service.name_or || service.name;
+            default:
+                return service.name;
+        }
+    };
+
+    // Function to get translated service description
+    const getTranslatedServiceDescription = (service) => {
+        // If you add description translations to your model, you can handle them here
+        // For now, we'll just use the default description
+        return service.description || translate("cooperative.noDescription");
+    };
 
     const totalFarmers = cooperative?.number_of_farmers || 0;
     const totalActiveServices = services.length;
@@ -198,11 +217,10 @@ const CoopHome = () => {
                                             {/* Service Content */}
                                             <div className="flex-1">
                                                 <h3 className="font-semibold text-lg text-gray-800 group-hover:text-green-600 transition-colors">
-                                                    {service.name}
+                                                    {getTranslatedServiceName(service)}
                                                 </h3>
                                                 <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                                                    {service.description ||
-                                                        translate("cooperative.noDescription")}
+                                                    {getTranslatedServiceDescription(service)}
                                                 </p>
 
                                                 <div className="flex flex-wrap gap-2 mt-3">

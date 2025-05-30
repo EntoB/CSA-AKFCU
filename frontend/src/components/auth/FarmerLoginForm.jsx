@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 axios.defaults.withCredentials = true;
 
 const FarmerLoginForm = () => {
+  const { translate } = useLanguage();
   const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
@@ -21,7 +23,6 @@ const FarmerLoginForm = () => {
     const { name, value } = e.target;
 
     if (name === "username") {
-      // Remove all non-digit characters
       const numericValue = value.replace(/\D/g, "");
       setFormData({ ...formData, [name]: numericValue });
     } else {
@@ -57,7 +58,7 @@ const FarmerLoginForm = () => {
           last_login: response.data.last_login,
         });
 
-        toast.success("Login successful! Redirecting...", {
+        toast.success(translate("common.loginSuccess"), {
           position: "top-right",
           autoClose: 1500,
           hideProgressBar: false,
@@ -76,7 +77,7 @@ const FarmerLoginForm = () => {
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.detail ||
-        "Login failed. Please check your credentials and try again.";
+        translate("common.loginFailed");
 
       setError(errorMessage);
 
@@ -125,9 +126,11 @@ const FarmerLoginForm = () => {
                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 />
               </svg>
-              <h2 className="text-2xl font-bold text-white mt-3">Login</h2>
+              <h2 className="text-2xl font-bold text-white mt-3">
+                {translate("common.login")}
+              </h2>
               <p className="text-green-100 mt-1">
-                Sign in to manage your farm activities
+                {translate("farmer.loginSubtitle")}
               </p>
             </div>
 
@@ -156,7 +159,7 @@ const FarmerLoginForm = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number
+                    {translate("common.Phone_Number")}
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -181,9 +184,9 @@ const FarmerLoginForm = () => {
                       onChange={handleChange}
                       required
                       className="focus:ring-green-500 focus:border-green-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Enter your phone number"
+                      placeholder={translate("farmer.phonePlaceholder")}
                       pattern="[0-9]{10}"
-                      title="Please enter a 10-digit phone number"
+                      title={translate("farmer.phoneValidation")}
                       maxLength="10"
                     />
                   </div>
@@ -191,7 +194,7 @@ const FarmerLoginForm = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password
+                    {translate("common.password")}
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -216,7 +219,7 @@ const FarmerLoginForm = () => {
                       onChange={handleChange}
                       required
                       className="focus:ring-green-500 focus:border-green-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Enter your password"
+                      placeholder={translate("farmer.passwordPlaceholder")}
                     />
                   </div>
                 </div>
@@ -233,7 +236,7 @@ const FarmerLoginForm = () => {
                       htmlFor="remember-me"
                       className="ml-2 block text-sm text-gray-700"
                     >
-                      Remember me
+                      {translate("common.rememberMe")}
                     </label>
                   </div>
 
@@ -242,7 +245,7 @@ const FarmerLoginForm = () => {
                       href="/forgot-password"
                       className="font-medium text-green-600 hover:text-green-500"
                     >
-                      Forgot password?
+                      {translate("common.forgotPassword")}
                     </a>
                   </div>
                 </div>
@@ -275,10 +278,10 @@ const FarmerLoginForm = () => {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           ></path>
                         </svg>
-                        Signing in...
+                        {translate("common.signingIn")}
                       </>
                     ) : (
-                      "Sign in"
+                      translate("common.signIn")
                     )}
                   </button>
                 </div>
@@ -291,7 +294,7 @@ const FarmerLoginForm = () => {
                   </div>
                   <div className="relative flex justify-center text-sm">
                     <span className="px-2 bg-white text-gray-500">
-                      Don't have an account?
+                      {translate("common.noAccount")}
                     </span>
                   </div>
                 </div>
@@ -301,7 +304,7 @@ const FarmerLoginForm = () => {
                     href="/farmer-signup"
                     className="w-full block text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    Create new farmer account
+                    {translate("farmer.createAccount")}
                   </a>
                 </div>
               </div>

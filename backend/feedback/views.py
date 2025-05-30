@@ -160,6 +160,8 @@ def get_services(request):
         {
             "id": service.id,
             "name": service.name,
+            "name_am": service.name_am,
+            "name_or": service.name_or,
             "description": service.description,
             "category": service.category,
         }

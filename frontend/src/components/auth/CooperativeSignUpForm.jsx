@@ -17,18 +17,26 @@ const CooperativeSignUpForm = () => {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        // For phone number field, only allow numbers
+        if (name === "phone_number") {
+            if (!value || /^[0-9\b]+$/.test(value)) {
+                setForm({ ...form, [name]: value });
+            }
+        } else {
+            setForm({ ...form, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setMessage("");
-        setIsLoading(true);
 
-        if (form.password !== form.confirm_password) {
-            setError("Passwords do not match.");
-            toast.error("Passwords do not match.", {
+        // Phone number validation
+        if (!/^09\d{8}$/.test(form.phone_number)) {
+            setError("Phone number must start with 09 and be 10 digits");
+            toast.error("Phone number must start with 09 and be 10 digits", {
                 position: "top-right",
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -37,9 +45,40 @@ const CooperativeSignUpForm = () => {
                 draggable: true,
                 progress: undefined,
             });
-            setIsLoading(false);
             return;
         }
+
+        // Password validation
+        if (form.password.length < 6) {
+            setError("Password must be at least 6 characters");
+            toast.error("Password must be at least 6 characters", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            return;
+        }
+
+        // Confirm password validation
+        if (form.password !== form.confirm_password) {
+            setError("Passwords do not match");
+            toast.error("Passwords do not match", {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            return;
+        }
+
+        setIsLoading(true);
 
         try {
             const response = await axios.post(
@@ -74,11 +113,12 @@ const CooperativeSignUpForm = () => {
                 });
 
                 setTimeout(() => {
-                    navigate("/login");
+                    navigate("/AdminCoop-Login");
                 }, 1500);
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.error ||
+            const errorMessage =
+                err.response?.data?.error ||
                 err.response?.data?.detail ||
                 "Registration failed. Please check your details and try again.";
 
@@ -99,7 +139,6 @@ const CooperativeSignUpForm = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-amber-50 flex items-center justify-center p-4">
-            {/* Toast container */}
             <ToastContainer
                 position="top-right"
                 autoClose={5000}
@@ -149,19 +188,20 @@ const CooperativeSignUpForm = () => {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone Number
+                                    Phone Number (09XXXXXXXX)
                                 </label>
                                 <div className="relative">
                                     <input
-                                        type="text"
+                                        type="tel" // Changed to tel for better mobile keyboard
                                         name="phone_number"
                                         value={form.phone_number}
                                         onChange={handleChange}
                                         required
+                                        pattern="^09\d{8}$"
+                                        maxLength="10"
+                                        inputMode="numeric" // Shows numeric keyboard on mobile
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
                                         placeholder="09XXXXXXXX"
-                                        pattern="^09\d{8}$"
-                                        title="Phone number must start with 09 and be 10 digits"
                                     />
                                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                         <svg
@@ -181,6 +221,7 @@ const CooperativeSignUpForm = () => {
                                 </div>
                             </div>
 
+                            {/* Rest of the form remains the same */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Registration Key
@@ -215,7 +256,7 @@ const CooperativeSignUpForm = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Password
+                                    Password (min 6 characters)
                                 </label>
                                 <div className="relative">
                                     <input
@@ -224,6 +265,7 @@ const CooperativeSignUpForm = () => {
                                         value={form.password}
                                         onChange={handleChange}
                                         required
+                                        minLength={6}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
                                         placeholder="Create password"
                                     />
@@ -256,6 +298,7 @@ const CooperativeSignUpForm = () => {
                                         value={form.confirm_password}
                                         onChange={handleChange}
                                         required
+                                        minLength={6}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
                                         placeholder="Confirm password"
                                     />
@@ -333,7 +376,7 @@ const CooperativeSignUpForm = () => {
                             <p className="text-sm text-gray-600">
                                 Already have an account?{" "}
                                 <a
-                                    href="/login"
+                                    href="/AdminCoop-Login"
                                     className="text-green-600 hover:text-green-800 font-medium"
                                 >
                                     Sign in here
@@ -352,5 +395,3 @@ const CooperativeSignUpForm = () => {
 };
 
 export default CooperativeSignUpForm;
-
-

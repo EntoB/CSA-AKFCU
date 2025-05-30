@@ -268,16 +268,20 @@ const RecommendationsPage = () => {
                         </Typography>
                     )}
                     {Array.isArray(recommendations.recommendations) && recommendations.recommendations.length > 0 && (
-                        <Box component="ul" sx={{
-                            pl: 3,
-                            mb: 2,
-                            '& li': {
-                                fontFamily: 'Poppins',
-                                fontSize: '1rem',
-                                mb: 1,
-                                lineHeight: 1.6
-                            }
-                        }}>
+                        <Box
+                            component="ul"
+                            sx={{
+                                pl: 3,
+                                mb: 2,
+                                '& li': {
+                                    fontFamily: 'Poppins',
+                                    fontSize: '1rem',
+                                    mb: 1,
+                                    lineHeight: 1.6,
+                                    listStyleType: 'disc', // Ensure bullet style
+                                }
+                            }}
+                        >
                             {recommendations.recommendations.map((rec, idx) => (
                                 <li key={idx}>{rec}</li>
                             ))}

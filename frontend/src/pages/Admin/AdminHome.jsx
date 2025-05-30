@@ -91,9 +91,12 @@ const AdminHome = () => {
     ];
 
     const handleLogout = () => {
-        // Implement logout logic here
-        navigate("/login");
+        localStorage.removeItem("role");
+        localStorage.removeItem("last_login");
+        setUser(null);
+        navigate("/AdminCoop-Login");
     };
+
 
     return (
         <div className="p-6">

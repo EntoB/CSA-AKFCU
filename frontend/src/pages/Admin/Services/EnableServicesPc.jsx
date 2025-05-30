@@ -2,11 +2,18 @@ import * as React from 'react';
 import axios from 'axios';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import Table from '@mui/joy/Table';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import CircularProgress from '@mui/joy/CircularProgress';
 import AnimatedAlert from '../../../components/common/AnimatedAlert';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
 
 function EnableServicesPc() {
     const [pcs, setPCs] = React.useState([]);
@@ -15,6 +22,8 @@ function EnableServicesPc() {
     const [message, setMessage] = React.useState('');
     const [showAlert, setShowAlert] = React.useState(false);
     const [search, setSearch] = React.useState("");
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -76,6 +85,9 @@ function EnableServicesPc() {
         pc.phone_number?.toLowerCase().includes(search.toLowerCase())
     );
 
+    // Pagination
+    const paginatedPCs = filteredPCs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
@@ -88,13 +100,14 @@ function EnableServicesPc() {
         return <Typography level="h4" sx={{ textAlign: 'center', mt: 5 }}>No cooperatives or services available.</Typography>;
     }
 
+    // Table columns: first column is sticky, others are fixed width and horizontally scrollable
     return (
         <Box sx={{ width: '100%', position: 'relative' }}>
             {/* Search input */}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0 }}>
                 <input
                     type="text"
-                    placeholder="Search cooperative "
+                    placeholder="Search cooperative"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     style={{
@@ -121,7 +134,7 @@ function EnableServicesPc() {
                     top: 24,
                     left: 0,
                     width: '100%',
-                    zIndex: 1300, // above modal/dialog
+                    zIndex: 1300,
                     display: 'flex',
                     justifyContent: 'center',
                     pointerEvents: 'none'
@@ -141,93 +154,140 @@ function EnableServicesPc() {
                 Enable Services for Cooperatives
             </Typography>
 
-            <Sheet
-                variant="outlined"
-                sx={theme => ({
-                    '--TableCell-height': '56px',
-                    '--TableHeader-height': 'calc(1 * var(--TableCell-height))',
-                    '--Table-firstColumnWidth': '200px',
-                    '--Table-lastColumnWidth': '144px',
-                    '--TableRow-stripeBackground': 'rgba(0 0 0 / 0.03)',
-                    '--TableRow-hoverBackground': 'rgba(0 0 0 / 0.07)',
-                    overflow: 'auto',
-                    background: theme.vars.palette.background.surface,
-                    borderRadius: 'lg',
-                    boxShadow: 'sm',
-                    p: 2,
-                })}
-            >
-                <Table
-                    borderAxis="bothBetween"
-                    stripe="odd"
-                    hoverRow
-                    sx={{
-                        minWidth: 700,
-                        '& th, & td': {
-                            textAlign: 'center',
-                            padding: 0,
-                        },
-                        '& th': {
-                            backgroundColor: '#d3f9d8',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
-                        },
-                        '& td:first-child, & th:first-child': {
-                            position: 'sticky',
-                            left: 0,
-                            backgroundColor: '#d3f9d8',
-                            fontSize: '1rem',
-                            fontWeight: 'bold',
-                            textAlign: 'left',
-                            zIndex: 2,
-                            padding: '0 16px',
-                        },
-                    }}
-                >
-                    <thead>
-                        <tr>
-                            <th style={{ width: 'var(--Table-firstColumnWidth)' }}>Cooperative</th>
-                            {services.map(service => (
-                                <th key={service.id}>{service.name}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredPCs.map(pc => (
-                            <tr key={pc.id}>
-                                <td>{pc.username}</td>
-                                {services.map(service => {
-                                    const isActive = (pc.active_services || []).includes(service.id);
-                                    return (
-                                        <td key={`${pc.id}-${service.id}`}>
-                                            <Button
-                                                fullWidth
-                                                size="lg"
-                                                variant={isActive ? 'solid' : 'outlined'}
-                                                color={isActive ? 'success' : 'neutral'}
+            <Paper sx={{
+                width: '100%',
+                overflow: 'auto',
+                boxShadow: 3,
+                borderRadius: 2,
+                bgcolor: '#e6f4ea',
+                mb: 3,
+            }}>
+                <TableContainer sx={{ maxHeight: 440, minWidth: 700 }}>
+                    <Table
+                        stickyHeader
+                        aria-label="enable services table"
+                        size="small"
+                        sx={{
+                            borderCollapse: 'collapse',
+                            '& td, & th': {
+                                borderRight: '1px solid #e0e0e0',
+                                borderBottom: '1px solid #e0e0e0',
+                                padding: '8px 12px',
+                            },
+                            '& td:last-child, & th:last-child': {
+                                borderRight: 0,
+                            },
+                        }}
+                    >
+                        <TableHead>
+                            <TableRow>
+                                <TableCell
+                                    sx={{
+                                        minWidth: 200,
+                                        maxWidth: 200,
+                                        background: '#d3f9d8',
+                                        fontWeight: 'bold',
+                                        position: 'sticky',
+                                        left: 0,
+                                        zIndex: 3,
+                                        fontSize: 14,
+                                        padding: '8px 12px',
+                                    }}
+                                >
+                                    Cooperative
+                                </TableCell>
+                                {services.map(service => (
+                                    <TableCell
+                                        key={service.id}
+                                        sx={{
+                                            minWidth: 140,
+                                            maxWidth: 140,
+                                            background: '#d3f9d8',
+                                            fontWeight: 'bold',
+                                            textAlign: 'center',
+                                            fontSize: 14,
+                                            padding: '8px 12px',
+                                        }}
+                                    >
+                                        {service.name}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {paginatedPCs.map(pc => (
+                                <TableRow key={pc.id}>
+                                    <TableCell
+                                        sx={{
+                                            minWidth: 200,
+                                            maxWidth: 200,
+                                            position: 'sticky',
+                                            left: 0,
+                                            background: '#f7fbe7',
+                                            fontWeight: 'bold',
+                                            zIndex: 1,
+                                            fontSize: 14,
+                                            padding: '8px 12px',
+                                        }}
+                                    >
+                                        {pc.username}
+                                    </TableCell>
+                                    {services.map(service => {
+                                        const isActive = (pc.active_services || []).includes(service.id);
+                                        return (
+                                            <TableCell
+                                                key={`${pc.id}-${service.id}`}
                                                 sx={{
-                                                    opacity: isActive ? 0.9 : 1,
-                                                    height: '48px',
-                                                    fontWeight: 'bold',
-                                                    fontSize: '1rem',
-                                                    borderRadius: 2,
-                                                    transition: 'all 0.2s',
-                                                    boxShadow: isActive ? 'sm' : 'none',
+                                                    minWidth: 140,
+                                                    maxWidth: 140,
+                                                    textAlign: 'center',
+                                                    fontSize: 14,
+                                                    padding: '8px 12px',
                                                 }}
-                                                onClick={() =>
-                                                    handleServiceToggle(pc.id, service.id, isActive)
-                                                }
                                             >
-                                                {isActive ? 'Active' : 'Inactive'}
-                                            </Button>
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Sheet>
+                                                <Button
+                                                    fullWidth
+                                                    size="lg"
+                                                    variant={isActive ? 'solid' : 'outlined'}
+                                                    color={isActive ? 'success' : 'neutral'}
+                                                    sx={{
+                                                        opacity: isActive ? 0.9 : 1,
+                                                        height: '48px',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '1rem',
+                                                        borderRadius: 2,
+                                                        transition: 'all 0.2s',
+                                                        boxShadow: isActive ? 'sm' : 'none',
+                                                        minWidth: 0,
+                                                        px: 0.5,
+                                                    }}
+                                                    onClick={() =>
+                                                        handleServiceToggle(pc.id, service.id, isActive)
+                                                    }
+                                                >
+                                                    {isActive ? 'Active' : 'Inactive'}
+                                                </Button>
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 50]}
+                    component="div"
+                    count={filteredPCs.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(event, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={event => {
+                        setRowsPerPage(+event.target.value);
+                        setPage(0);
+                    }}
+                />
+            </Paper>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                 <Button

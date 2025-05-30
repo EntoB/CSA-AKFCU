@@ -9,7 +9,7 @@ const FarmerHome = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const { translate } = useLanguage();
+    const { translate, language } = useLanguage();
 
     useEffect(() => {
         const fetchFarmerAndServices = async () => {
@@ -33,6 +33,25 @@ const FarmerHome = () => {
         };
         fetchFarmerAndServices();
     }, []);
+
+    // Function to get translated service name
+    const getTranslatedServiceName = (service) => {
+        switch (language) {
+            case "am":
+                return service.name_am || service.name;
+            case "or":
+                return service.name_or || service.name;
+            default:
+                return service.name;
+        }
+    };
+
+    // Function to get translated service description
+    const getTranslatedServiceDescription = (service) => {
+        // If you add description translations to your model, you can handle them here
+        // For now, we'll just use the default description
+        return service.description || translate("cooperative.noDescription");
+    };
 
     const handleCardClick = (service) => {
         navigate(`/farmer/feedback`, { state: { service } });
@@ -281,12 +300,11 @@ const FarmerHome = () => {
                                                 </svg>
                                             </motion.div>
                                             <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-                                                {service.name}
+                                                {getTranslatedServiceName(service)}
                                             </h3>
                                         </div>
                                         <p className="text-gray-600 mb-4 text-sm line-clamp-2">
-                                            {service.description ||
-                                                "Service description not available"}
+                                            {getTranslatedServiceDescription(service)}
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {service.category && (
